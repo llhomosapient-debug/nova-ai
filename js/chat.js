@@ -11,6 +11,11 @@ const welcomeElement = document.getElementById("welcome")
 const inputElement = document.getElementById("messageInput")
 const sendElement = document.getElementById("sendButton")
 
+function makeId() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID()
+  return "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2)
+}
+
 function getChats() {
   try {
     const chats = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
@@ -24,7 +29,7 @@ function saveChats(chats) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chats.slice(0, 100)))
   } catch (error) {
-    console.error("Nova history error:", error)
+    console.error("Nova history error", error)
   }
 }
 
@@ -46,7 +51,7 @@ function saveChat(chat) {
 
 function createChat() {
   currentChat = {
-    id: crypto.randomUUID(),
+    id: makeId(),
     title: "New chat",
     messages: [],
     updated: Date.now()
@@ -55,6 +60,7 @@ function createChat() {
   messagesElement.innerHTML = ""
   welcomeElement.style.display = ""
   renderHistory()
+  return currentChat
 }
 
 function addMessage(role, text) {
@@ -65,7 +71,7 @@ function addMessage(role, text) {
 
   const content = document.createElement("div")
   content.className = "message-content"
-  content.textContent = text
+  content.textContent = String(text ?? "")
 
   message.appendChild(content)
   messagesElement.appendChild(message)
@@ -78,16 +84,17 @@ function addMessage(role, text) {
 }
 
 async function sendMessage() {
-  if (generating) return
+  if (generating || !inputElement || !sendElement) return
 
   const text = inputElement.value.trim()
   if (!text) return
+
   if (!currentChat) createChat()
 
   inputElement.value = ""
   inputElement.style.height = "auto"
-  addMessage("user", text)
 
+  addMessage("user", text)
   currentChat.messages.push({ role: "user", content: text })
 
   if (currentChat.title === "New chat") {
@@ -116,8 +123,8 @@ async function sendMessage() {
         thinking: Boolean(settings.thinking),
         research: Boolean(settings.research),
         images: Boolean(settings.images),
-        mature_mode: Boolean(settings.matureMode && settings.ageVerified),
         age_verified: Boolean(settings.ageVerified),
+        mature_mode: Boolean(settings.matureMode && settings.ageVerified),
         style: settings.style || "balanced"
       })
     })
@@ -142,7 +149,7 @@ async function sendMessage() {
     saveChat(currentChat)
     renderHistory()
   } catch (error) {
-    console.error("Nova error:", error)
+    console.error("Nova error", error)
     answerElement.textContent = "Nova couldn't connect right now. Check the Worker and try again."
   } finally {
     generating = false
@@ -160,22 +167,18 @@ function loadChat(chatData) {
   }
 
   messagesElement.innerHTML = ""
-
-  if (!currentChat.messages.length) {
-    welcomeElement.style.display = ""
-    renderHistory()
-    return
-  }
-
-  welcomeElement.style.display = "none"
+  welcomeElement.style.display = currentChat.messages.length ? "none" : ""
 
   currentChat.messages.forEach(message => {
-    if (message.role !== "user" && message.role !== "assistant") return
-    addMessage(message.role, String(message.content || ""))
+    if (message.role === "user" || message.role === "assistant") {
+      addMessage(message.role, message.content)
+    }
   })
 
   renderHistory()
-  requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
+  requestAnimationFrame(() => {
+    chatElement.scrollTop = chatElement.scrollHeight
+  })
 }
 
 function deleteChat(chatId) {
@@ -203,30 +206,30 @@ function renderHistory() {
     const button = document.createElement("button")
     button.type = "button"
     button.className = "chat-history-item"
-    if (currentChat?.id === chat.id) button.classList.add("active")
     button.textContent = chat.title || "New chat"
     button.title = chat.title || "New chat"
+    if (currentChat?.id === chat.id) button.classList.add("active")
     button.addEventListener("click", () => loadChat(chat))
 
     const deleteButton = document.createElement("button")
     deleteButton.type = "button"
     deleteButton.className = "chat-delete"
-    deleteButton.setAttribute("aria-label", `Delete ${chat.title || "chat"}`)
+    deleteButton.setAttribute("aria-label", "Delete chat")
     deleteButton.title = "Delete chat"
     deleteButton.addEventListener("click", event => {
+      event.preventDefault()
       event.stopPropagation()
       deleteChat(chat.id)
     })
 
-    row.appendChild(button)
-    row.appendChild(deleteButton)
+    row.append(button, deleteButton)
     historyElement.appendChild(row)
   })
 }
 
 function startNewChat() {
   createChat()
-  inputElement.focus()
+  inputElement?.focus()
 }
 
 window.sendMessage = sendMessage
