@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nova AI</title>
+</head>
 
+<body>
+  <h1>Nova AI</h1>
+
+  <div id="chat"></div>
+
+  <input id="message" placeholder="Talk to Nova...">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("message");
+      const chat = document.getElementById("chat");
+
+      const message = input.value.trim();
+      if (!message) return;
+
+      chat.innerHTML += `<p><b>You:</b> ${message}</p>`;
+      input.value = "";
+
+      const response = await fetch(
+        "https://muddy-tooth-d17c.llhomosapient.workers.dev",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        }
+      );
+
+      const data = await response.json();
+
+      chat.innerHTML += `<p><b>Nova:</b> ${data.response}</p>`;
+    }
+  </script>
+</body>
+</html>
