@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#09090b">
+
+  <meta name="theme-color" content="#070709">
+  <meta name="color-scheme" content="dark">
+
   <title>Nova</title>
 
   <link rel="stylesheet" href="css/app.css">
@@ -11,67 +14,90 @@
 </head>
 
 <body>
+
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
 <div id="app">
 
   <aside id="sidebar">
 
-    <div class="brand">
-      <div class="nova-mark">N</div>
-      <div class="brand-text">
-        <strong>Nova</strong>
-        <span>AI workspace</span>
+    <div class="sidebar-top">
+
+      <div class="brand">
+        <div class="nova-symbol">N</div>
+
+        <div class="brand-copy">
+          <strong>Nova</strong>
+          <span>AI workspace</span>
+        </div>
       </div>
+
+      <button id="newChat" class="new-chat">
+        <span class="new-chat-icon">＋</span>
+        <span>New chat</span>
+        <kbd>⌘ K</kbd>
+      </button>
+
+      <button id="searchChats" class="nav-button">
+        <span class="nav-icon">⌕</span>
+        <span>Search</span>
+        <kbd>⌘ F</kbd>
+      </button>
+
     </div>
-
-    <button id="newChat" class="new-chat">
-      <span>＋</span>
-      <span>New chat</span>
-      <kbd>⌘ K</kbd>
-    </button>
-
-    <button id="searchChats" class="sidebar-action">
-      <span class="icon">⌕</span>
-      <span>Search</span>
-      <kbd>⌘ F</kbd>
-    </button>
 
     <div class="sidebar-scroll">
 
-      <div class="sidebar-label">Workspace</div>
+      <div class="nav-section">
 
-      <button id="projects" class="sidebar-action">
-        <span class="icon">◇</span>
-        <span>Projects</span>
-      </button>
+        <div class="section-label">
+          Workspace
+        </div>
 
-      <button id="library" class="sidebar-action">
-        <span class="icon">▱</span>
-        <span>Library</span>
-      </button>
+        <button id="projects" class="nav-button">
+          <span class="nav-icon">◇</span>
+          <span>Projects</span>
+        </button>
 
-      <button id="plugins" class="sidebar-action">
-        <span class="icon">⌘</span>
-        <span>Plugins</span>
-      </button>
+        <button id="library" class="nav-button">
+          <span class="nav-icon">▱</span>
+          <span>Library</span>
+        </button>
 
-      <div class="sidebar-label chat-label">Recent</div>
+        <button id="plugins" class="nav-button">
+          <span class="nav-icon">⌘</span>
+          <span>Plugins</span>
+        </button>
 
-      <div id="chatHistory"></div>
+      </div>
+
+      <div class="nav-section recent-section">
+
+        <div class="section-label">
+          Recent
+        </div>
+
+        <div id="chatHistory"></div>
+
+      </div>
 
     </div>
 
-    <div class="account">
+    <div class="sidebar-bottom">
 
-      <button id="settings" class="account-button">
+      <button id="settings" class="profile-button">
 
-        <div class="account-avatar">N</div>
+        <div class="profile-avatar">
+          N
+        </div>
 
-        <div class="account-info">
+        <div class="profile-copy">
           <strong>Nova</strong>
           <span>Settings</span>
         </div>
 
-        <span class="account-more">•••</span>
+        <span class="profile-more">•••</span>
 
       </button>
 
@@ -84,23 +110,23 @@
 
     <header id="topbar">
 
-      <button id="mobileMenu" aria-label="Open menu">
+      <button id="mobileMenu" class="icon-button">
         ☰
       </button>
 
       <button id="modelSelector" class="model-selector">
 
-        <span class="model-dot"></span>
+        <span class="model-status"></span>
 
         <span>Nova</span>
 
-        <span class="model-chevron">⌄</span>
+        <span class="model-arrow">⌄</span>
 
       </button>
 
-      <div class="topbar-spacer"></div>
+      <div class="topbar-space"></div>
 
-      <button id="shareButton" class="topbar-button">
+      <button id="shareButton" class="icon-button">
         ↗
       </button>
 
@@ -111,11 +137,15 @@
 
       <div id="welcome">
 
-        <div class="hero-mark">
-          <span>N</span>
+        <div class="hero-orb">
+
+          <div class="hero-orb-inner">
+            N
+          </div>
+
         </div>
 
-        <div class="eyebrow">
+        <div class="hero-label">
           NOVA AI
         </div>
 
@@ -124,41 +154,53 @@
         </h1>
 
         <p>
-          Ask anything. Create anything. Explore anything.
+          Ask anything. Build anything. Explore anything.
         </p>
 
         <div class="suggestions">
 
           <button data-prompt="Explain a difficult concept simply">
             <span class="suggestion-icon">✦</span>
-            <span>
+
+            <span class="suggestion-copy">
               <strong>Explain</strong>
               <small>Break down something difficult</small>
             </span>
+
+            <span class="suggestion-arrow">↗</span>
           </button>
 
           <button data-prompt="Help me write something">
             <span class="suggestion-icon">Aa</span>
-            <span>
+
+            <span class="suggestion-copy">
               <strong>Write</strong>
               <small>Create or improve something</small>
             </span>
+
+            <span class="suggestion-arrow">↗</span>
           </button>
 
           <button data-prompt="Help me build a project">
             <span class="suggestion-icon">&lt;/&gt;</span>
-            <span>
+
+            <span class="suggestion-copy">
               <strong>Build</strong>
               <small>Code and create projects</small>
             </span>
+
+            <span class="suggestion-arrow">↗</span>
           </button>
 
           <button data-prompt="Give me some interesting ideas">
             <span class="suggestion-icon">✧</span>
-            <span>
+
+            <span class="suggestion-copy">
               <strong>Explore</strong>
               <small>Discover something new</small>
             </span>
+
+            <span class="suggestion-arrow">↗</span>
           </button>
 
         </div>
@@ -174,7 +216,11 @@
 
       <div id="composer">
 
-        <button id="attach" aria-label="Attach file">
+        <button
+          id="attach"
+          class="composer-button"
+          aria-label="Attach file"
+        >
           ＋
         </button>
 
@@ -186,7 +232,11 @@
           spellcheck="true"
         ></textarea>
 
-        <button id="sendButton" aria-label="Send message">
+        <button
+          id="sendButton"
+          class="send-button"
+          aria-label="Send message"
+        >
           ↑
         </button>
 
