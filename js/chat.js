@@ -1,6 +1,8 @@
 const API_URL =
   "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 
+const STORAGE_KEY = "nova_chats_v2"
+
 let currentChat = null
 let generating = false
 
@@ -19,6 +21,78 @@ const inputElement =
 const sendElement =
   document.getElementById("sendButton")
 
+
+/* =========================
+   STORAGE
+========================= */
+
+function getChats() {
+
+  try {
+
+    const chats =
+      JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+      )
+
+    return Array.isArray(chats)
+      ? chats
+      : []
+
+  } catch {
+
+    return []
+
+  }
+}
+
+
+function saveChats(chats) {
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(chats)
+  )
+
+}
+
+
+function saveChat(chat) {
+
+  if (!chat) return
+
+  const chats = getChats()
+
+  const index =
+    chats.findIndex(
+      item => item.id === chat.id
+    )
+
+  if (index === -1) {
+
+    chats.push(chat)
+
+  } else {
+
+    chats[index] = chat
+
+  }
+
+  chats.sort(
+    (a, b) =>
+      (b.updated || 0) -
+      (a.updated || 0)
+  )
+
+  saveChats(chats)
+
+}
+
+
+/* =========================
+   CREATE CHAT
+========================= */
+
 function createChat() {
 
   currentChat = {
@@ -29,10 +103,17 @@ function createChat() {
   }
 
   messagesElement.innerHTML = ""
+
   welcomeElement.style.display = ""
 
   renderHistory()
+
 }
+
+
+/* =========================
+   MESSAGES
+========================= */
 
 function addMessage(role, text) {
 
@@ -53,13 +134,24 @@ function addMessage(role, text) {
   content.textContent = text
 
   message.appendChild(content)
+
   messagesElement.appendChild(message)
 
-  chatElement.scrollTop =
-    chatElement.scrollHeight
+  requestAnimationFrame(() => {
+
+    chatElement.scrollTop =
+      chatElement.scrollHeight
+
+  })
 
   return content
+
 }
+
+
+/* =========================
+   SEND
+========================= */
 
 async function sendMessage() {
 
@@ -75,9 +167,14 @@ async function sendMessage() {
   }
 
   inputElement.value = ""
-  inputElement.style.height = "auto"
 
-  addMessage("user", text)
+  inputElement.style.height =
+    "auto"
+
+  addMessage(
+    "user",
+    text
+  )
 
   currentChat.messages.push({
     role: "user",
@@ -87,22 +184,30 @@ async function sendMessage() {
   if (
     currentChat.title === "New chat"
   ) {
+
     currentChat.title =
       text.length > 45
         ? text.slice(0, 45) + "..."
         : text
+
   }
 
-  currentChat.updated = Date.now()
+  currentChat.updated =
+    Date.now()
 
   saveChat(currentChat)
+
   renderHistory()
 
   generating = true
+
   sendElement.disabled = true
 
   const answerElement =
-    addMessage("assistant", "")
+    addMessage(
+      "assistant",
+      ""
+    )
 
   answerElement.innerHTML = `
     <div class="typing">
@@ -115,35 +220,48 @@ async function sendMessage() {
   try {
 
     const response =
-      await fetch(API_URL, {
-        method: "POST",
+      await fetch(
+        API_URL,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
 
-        body: JSON.stringify({
-          message: text,
-          history:
-            currentChat.messages.slice(-12)
-        })
-      })
+          body: JSON.stringify({
+            message: text,
+
+            history:
+              currentChat.messages
+                .slice(-12)
+          })
+        }
+      )
 
     let data
 
     try {
-      data = await response.json()
+
+      data =
+        await response.json()
+
     } catch {
+
       throw new Error(
         "Nova returned an invalid response"
       )
+
     }
 
     if (!response.ok) {
+
       throw new Error(
         data.error ||
         `Request failed ${response.status}`
       )
+
     }
 
     const answer =
@@ -152,9 +270,11 @@ async function sendMessage() {
         : ""
 
     if (!answer) {
+
       throw new Error(
         "Nova returned an empty response"
       )
+
     }
 
     answerElement.textContent =
@@ -165,14 +285,19 @@ async function sendMessage() {
       content: answer
     })
 
-    currentChat.updated = Date.now()
+    currentChat.updated =
+      Date.now()
 
     saveChat(currentChat)
+
     renderHistory()
 
   } catch (error) {
 
-    console.error("Nova error:", error)
+    console.error(
+      "Nova error:",
+      error
+    )
 
     answerElement.textContent =
       "Nova couldn't connect right now. Check the Worker and try again."
@@ -180,68 +305,135 @@ async function sendMessage() {
   } finally {
 
     generating = false
-    sendElement.disabled = false
+
+    sendElement.disabled =
+      false
 
     inputElement.focus()
 
   }
+
 }
+
+
+/* =========================
+   LOAD CHAT
+========================= */
 
 function loadChat(chatData) {
 
+  if (!chatData) return
+
   currentChat = {
     ...chatData,
+
     messages:
-      Array.isArray(chatData.messages)
+      Array.isArray(
+        chatData.messages
+      )
         ? chatData.messages
         : []
   }
 
-  messagesElement.innerHTML = ""
+  messagesElement.innerHTML =
+    ""
 
-  if (!currentChat.messages.length) {
-    welcomeElement.style.display = ""
+  if (
+    !currentChat.messages.length
+  ) {
+
+    welcomeElement.style.display =
+      ""
+
     renderHistory()
+
     return
+
   }
 
-  welcomeElement.style.display = "none"
+  welcomeElement.style.display =
+    "none"
 
-  currentChat.messages.forEach(message => {
+  currentChat.messages.forEach(
+    message => {
 
-    if (
-      message.role !== "user" &&
-      message.role !== "assistant"
-    ) {
-      return
+      if (
+        message.role !== "user" &&
+        message.role !== "assistant"
+      ) {
+        return
+      }
+
+      addMessage(
+        message.role,
+        message.content
+      )
+
     }
-
-    addMessage(
-      message.role,
-      message.content
-    )
-  })
+  )
 
   renderHistory()
 
-  requestAnimationFrame(() => {
-    chatElement.scrollTop =
-      chatElement.scrollHeight
-  })
 }
+
+
+/* =========================
+   DELETE CHAT
+========================= */
+
+function deleteChat(chatId) {
+
+  const chats =
+    getChats().filter(
+      chat => chat.id !== chatId
+    )
+
+  saveChats(chats)
+
+  if (
+    currentChat &&
+    currentChat.id === chatId
+  ) {
+
+    currentChat = null
+
+    messagesElement.innerHTML = ""
+
+    welcomeElement.style.display =
+      ""
+
+  }
+
+  renderHistory()
+
+}
+
+
+/* =========================
+   HISTORY UI
+========================= */
 
 function renderHistory() {
 
   const historyElement =
-    document.getElementById("chatHistory")
+    document.getElementById(
+      "chatHistory"
+    )
 
   if (!historyElement) return
 
   historyElement.innerHTML = ""
 
-  const chats = getChats()
+  const chats =
+    getChats()
 
   chats.forEach(chat => {
+
+    const row =
+      document.createElement("div")
+
+    row.className =
+      "chat-history-row"
 
     const button =
       document.createElement("button")
@@ -253,7 +445,11 @@ function renderHistory() {
       currentChat &&
       chat.id === currentChat.id
     ) {
-      button.classList.add("active")
+
+      button.classList.add(
+        "active"
+      )
+
     }
 
     button.textContent =
@@ -264,18 +460,74 @@ function renderHistory() {
       () => loadChat(chat)
     )
 
-    historyElement.appendChild(button)
+    const deleteButton =
+      document.createElement("button")
+
+    deleteButton.className =
+      "chat-delete"
+
+    deleteButton.textContent =
+      "×"
+
+    deleteButton.title =
+      "Delete chat"
+
+    deleteButton.addEventListener(
+      "click",
+      event => {
+
+        event.stopPropagation()
+
+        deleteChat(chat.id)
+
+      }
+    )
+
+    row.appendChild(button)
+
+    row.appendChild(deleteButton)
+
+    historyElement.appendChild(row)
+
   })
+
 }
+
+
+/* =========================
+   NEW CHAT
+========================= */
 
 function startNewChat() {
+
   createChat()
+
   inputElement.focus()
+
 }
 
-window.sendMessage = sendMessage
-window.newChat = startNewChat
-window.loadChat = loadChat
-window.renderHistory = renderHistory
+
+/* =========================
+   GLOBALS
+========================= */
+
+window.sendMessage =
+  sendMessage
+
+window.newChat =
+  startNewChat
+
+window.loadChat =
+  loadChat
+
+window.renderHistory =
+  renderHistory
+
+window.deleteChat =
+  deleteChat
+
+window.getChats =
+  getChats
+
 
 renderHistory()
