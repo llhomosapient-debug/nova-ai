@@ -226,3 +226,40 @@
   }
 
 }
+.chat-history-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 2px 0;
+}
+
+.chat-history-row .chat-history-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-delete {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #777;
+
+  cursor: pointer;
+
+  opacity: 0;
+  transition: .15s ease;
+}
+
+.chat-history-row:hover .chat-delete {
+  opacity: 1;
+}
+
+.chat-delete:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+}
