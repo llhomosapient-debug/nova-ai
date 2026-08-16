@@ -1,8 +1,6 @@
-const API_URL =
-  "https://muddy-tooth-d17c.llhomosapient.workers.dev"
-
+const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 const STORAGE_KEY = "nova_chats_v2"
-const SETTINGS_KEY = "nova_settings_v1"
+const SETTINGS_KEY = "nova_settings_v2"
 
 let currentChat = null
 let generating = false
@@ -41,7 +39,6 @@ function getNovaSettings() {
 
 function saveChat(chat) {
   if (!chat?.id) return
-
   const chats = getChats().filter(item => item.id !== chat.id)
   chats.unshift(chat)
   saveChats(chats)
@@ -85,23 +82,16 @@ async function sendMessage() {
 
   const text = inputElement.value.trim()
   if (!text) return
-
   if (!currentChat) createChat()
 
   inputElement.value = ""
   inputElement.style.height = "auto"
-
   addMessage("user", text)
 
-  currentChat.messages.push({
-    role: "user",
-    content: text
-  })
+  currentChat.messages.push({ role: "user", content: text })
 
   if (currentChat.title === "New chat") {
-    currentChat.title = text.length > 45
-      ? text.slice(0, 45) + "..."
-      : text
+    currentChat.title = text.length > 45 ? text.slice(0, 45) + "..." : text
   }
 
   currentChat.updated = Date.now()
@@ -112,32 +102,27 @@ async function sendMessage() {
   sendElement.disabled = true
 
   const answerElement = addMessage("assistant", "")
-
-  answerElement.innerHTML = `
-    <div class="typing" aria-label="Nova is thinking">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  `
+  answerElement.innerHTML = `<div class="typing" aria-label="Nova is thinking"><span></span><span></span><span></span></div>`
 
   try {
     const settings = getNovaSettings()
 
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
         history: currentChat.messages.slice(-12),
-        thinking: Boolean(settings.thinking)
+        thinking: Boolean(settings.thinking),
+        research: Boolean(settings.research),
+        images: Boolean(settings.images),
+        mature_mode: Boolean(settings.matureMode && settings.ageVerified),
+        age_verified: Boolean(settings.ageVerified),
+        style: settings.style || "balanced"
       })
     })
 
     let data
-
     try {
       data = await response.json()
     } catch {
@@ -145,34 +130,20 @@ async function sendMessage() {
     }
 
     if (!response.ok) {
-      throw new Error(
-        data.error || `Request failed ${response.status}`
-      )
+      throw new Error(data.error || `Request failed ${response.status}`)
     }
 
-    const answer = typeof data.response === "string"
-      ? data.response.trim()
-      : ""
-
-    if (!answer) {
-      throw new Error("Nova returned an empty response")
-    }
+    const answer = typeof data.response === "string" ? data.response.trim() : ""
+    if (!answer) throw new Error("Nova returned an empty response")
 
     answerElement.textContent = answer
-
-    currentChat.messages.push({
-      role: "assistant",
-      content: answer
-    })
-
+    currentChat.messages.push({ role: "assistant", content: answer })
     currentChat.updated = Date.now()
     saveChat(currentChat)
     renderHistory()
   } catch (error) {
     console.error("Nova error:", error)
-
-    answerElement.textContent =
-      "Nova couldn't connect right now. Check the Worker and try again."
+    answerElement.textContent = "Nova couldn't connect right now. Check the Worker and try again."
   } finally {
     generating = false
     sendElement.disabled = false
@@ -185,9 +156,7 @@ function loadChat(chatData) {
 
   currentChat = {
     ...chatData,
-    messages: Array.isArray(chatData.messages)
-      ? chatData.messages
-      : []
+    messages: Array.isArray(chatData.messages) ? chatData.messages : []
   }
 
   messagesElement.innerHTML = ""
@@ -201,19 +170,12 @@ function loadChat(chatData) {
   welcomeElement.style.display = "none"
 
   currentChat.messages.forEach(message => {
-    if (
-      message.role !== "user" &&
-      message.role !== "assistant"
-    ) return
-
-    addMessage(message.role, message.content)
+    if (message.role !== "user" && message.role !== "assistant") return
+    addMessage(message.role, String(message.content || ""))
   })
 
   renderHistory()
-
-  requestAnimationFrame(() => {
-    chatElement.scrollTop = chatElement.scrollHeight
-  })
+  requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
 }
 
 function deleteChat(chatId) {
@@ -241,11 +203,7 @@ function renderHistory() {
     const button = document.createElement("button")
     button.type = "button"
     button.className = "chat-history-item"
-
-    if (currentChat?.id === chat.id) {
-      button.classList.add("active")
-    }
-
+    if (currentChat?.id === chat.id) button.classList.add("active")
     button.textContent = chat.title || "New chat"
     button.title = chat.title || "New chat"
     button.addEventListener("click", () => loadChat(chat))
@@ -255,7 +213,6 @@ function renderHistory() {
     deleteButton.className = "chat-delete"
     deleteButton.setAttribute("aria-label", `Delete ${chat.title || "chat"}`)
     deleteButton.title = "Delete chat"
-
     deleteButton.addEventListener("click", event => {
       event.stopPropagation()
       deleteChat(chat.id)
