@@ -1,6 +1,6 @@
 const input = document.getElementById("messageInput")
-const send = document.getElementById("sendButton")
-const newChat = document.getElementById("newChat")
+const sendButton = document.getElementById("sendButton")
+const newChatButton = document.getElementById("newChat")
 const mobileMenu = document.getElementById("mobileMenu")
 const sidebar = document.getElementById("sidebar")
 
@@ -21,11 +21,11 @@ input?.addEventListener("keydown", event => {
   }
 })
 
-send?.addEventListener("click", () => {
+sendButton?.addEventListener("click", () => {
   window.sendMessage()
 })
 
-newChat?.addEventListener("click", () => {
+newChatButton?.addEventListener("click", () => {
   window.newChat()
 })
 
@@ -33,49 +33,40 @@ mobileMenu?.addEventListener("click", () => {
   sidebar?.classList.toggle("open")
 })
 
-document
-  .querySelectorAll(".suggestions button")
-  .forEach(button => {
-
-    button.addEventListener("click", () => {
-
-      input.value =
-        button.dataset.prompt || ""
-
-      resizeInput()
-      input.focus()
-    })
-
+document.querySelectorAll(".suggestions button").forEach(button => {
+  button.addEventListener("click", () => {
+    input.value = button.dataset.prompt || ""
+    resizeInput()
+    input.focus()
   })
+})
 
-document
-  .getElementById("projects")
-  ?.addEventListener("click", () => {
-    alert("Projects coming next")
-  })
+document.getElementById("projects")?.addEventListener("click", () => {
+  alert("Projects will be added next")
+})
 
-document
-  .getElementById("library")
-  ?.addEventListener("click", () => {
-    alert("Library coming next")
-  })
+document.getElementById("library")?.addEventListener("click", () => {
+  alert("Library will be added next")
+})
 
-document
-  .getElementById("plugins")
-  ?.addEventListener("click", () => {
-    alert("Plugins coming next")
-  })
+document.getElementById("plugins")?.addEventListener("click", () => {
+  alert("Plugins will be added next")
+})
 
-document
-  .getElementById("settings")
-  ?.addEventListener("click", () => {
-    alert("Settings coming next")
-  })
+document.getElementById("settings")?.addEventListener("click", () => {
+  alert("Settings will be added next")
+})
 
-document
-  .getElementById("searchChats")
-  ?.addEventListener("click", () => {
-    alert("Chat search coming next")
-  })
+document.getElementById("searchChats")?.addEventListener("click", () => {
+  alert("Chat search will be added next")
+})
+
+document.getElementById("attach")?.addEventListener("click", () => {
+  alert("Attachments will be added next")
+})
+
+document.getElementById("modelSelector")?.addEventListener("click", () => {
+  alert("Model selector will be added next")
+})
 
 input?.focus()
