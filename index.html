@@ -3,26 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070709">
+  <meta name="theme-color" content="#07111f">
   <meta name="color-scheme" content="dark">
   <title>Nova</title>
-
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/chat.css">
   <link rel="stylesheet" href="css/settings.css">
 </head>
-
 <body>
-
 <div class="ambient ambient-one"></div>
 <div class="ambient ambient-two"></div>
+<div class="ambient ambient-three"></div>
 
 <div id="app">
-
   <aside id="sidebar">
-
     <div class="sidebar-top">
-
       <div class="brand">
         <div class="nova-symbol">N</div>
         <div class="brand-copy">
@@ -42,147 +37,77 @@
         <span>Search</span>
         <kbd>⌘ F</kbd>
       </button>
-
     </div>
 
     <div class="sidebar-scroll">
-
       <div class="nav-section">
         <div class="section-label">Workspace</div>
+        <button id="projects" class="nav-button" type="button"><span class="nav-icon">◇</span><span>Projects</span></button>
+        <button id="library" class="nav-button" type="button"><span class="nav-icon">▱</span><span>Library</span></button>
+        <button id="plugins" class="nav-button" type="button"><span class="nav-icon">⌘</span><span>Plugins</span></button>
+      </div>
 
-        <button id="projects" class="nav-button" type="button">
-          <span class="nav-icon">◇</span>
-          <span>Projects</span>
-        </button>
-
-        <button id="library" class="nav-button" type="button">
-          <span class="nav-icon">▱</span>
-          <span>Library</span>
-        </button>
-
-        <button id="plugins" class="nav-button" type="button">
-          <span class="nav-icon">⌘</span>
-          <span>Plugins</span>
-        </button>
+      <div class="nav-section research-section">
+        <div class="section-label">Tools</div>
+        <button id="webResearch" class="nav-button" type="button"><span class="nav-icon">◎</span><span>Web research</span></button>
+        <button id="imageTools" class="nav-button" type="button"><span class="nav-icon">▧</span><span>Image generation</span></button>
       </div>
 
       <div class="nav-section recent-section">
         <div class="section-label">Recent</div>
         <div id="chatHistory"></div>
       </div>
-
     </div>
 
     <div class="sidebar-bottom">
-      <button id="settings" class="profile-button" type="button">
+      <button id="accountButton" class="profile-button" type="button">
         <div class="profile-avatar">N</div>
-        <div class="profile-copy">
-          <strong>Nova</strong>
-          <span>Settings</span>
-        </div>
-        <span class="profile-more">•••</span>
+        <div class="profile-copy"><strong>Sign in</strong><span>Sync your Nova workspace</span></div>
+        <span class="profile-more">›</span>
       </button>
+      <button id="settings" class="settings-link" type="button"><span>⚙</span><span>Settings</span></button>
     </div>
-
   </aside>
 
   <main id="main">
-
     <header id="topbar">
       <button id="mobileMenu" class="icon-button" type="button" aria-label="Open menu">☰</button>
-
       <button id="modelSelector" class="model-selector" type="button">
-        <span class="model-status"></span>
-        <span>Nova</span>
-        <span class="model-arrow">⌄</span>
+        <span class="model-status"></span><span>Nova</span><span class="model-arrow">⌄</span>
       </button>
-
       <div class="topbar-space"></div>
-
       <button id="shareButton" class="icon-button" type="button" aria-label="Share">↗</button>
     </header>
 
     <section id="chat">
-
       <div id="welcome">
-        <div class="hero-orb">
-          <div class="hero-orb-inner">N</div>
-        </div>
-
+        <div class="hero-orb"><div class="hero-orb-inner">N</div></div>
         <div class="hero-label">NOVA AI</div>
-
         <h1>What are we building today?</h1>
         <p>Ask anything. Build anything. Explore anything.</p>
-
         <div class="suggestions">
-          <button data-prompt="Explain a difficult concept simply" type="button">
-            <span class="suggestion-icon">✦</span>
-            <span class="suggestion-copy">
-              <strong>Explain</strong>
-              <small>Break down something difficult</small>
-            </span>
-            <span class="suggestion-arrow">↗</span>
-          </button>
-
-          <button data-prompt="Help me write something" type="button">
-            <span class="suggestion-icon">Aa</span>
-            <span class="suggestion-copy">
-              <strong>Write</strong>
-              <small>Create or improve something</small>
-            </span>
-            <span class="suggestion-arrow">↗</span>
-          </button>
-
-          <button data-prompt="Help me build a project" type="button">
-            <span class="suggestion-icon">&lt;/&gt;</span>
-            <span class="suggestion-copy">
-              <strong>Build</strong>
-              <small>Code and create projects</small>
-            </span>
-            <span class="suggestion-arrow">↗</span>
-          </button>
-
-          <button data-prompt="Give me some interesting ideas" type="button">
-            <span class="suggestion-icon">✧</span>
-            <span class="suggestion-copy">
-              <strong>Explore</strong>
-              <small>Discover something new</small>
-            </span>
-            <span class="suggestion-arrow">↗</span>
-          </button>
+          <button data-prompt="Explain a difficult concept simply" type="button"><span class="suggestion-icon">✦</span><span class="suggestion-copy"><strong>Explain</strong><small>Break down something difficult</small></span><span class="suggestion-arrow">↗</span></button>
+          <button data-prompt="Help me write something" type="button"><span class="suggestion-icon">Aa</span><span class="suggestion-copy"><strong>Write</strong><small>Create or improve something</small></span><span class="suggestion-arrow">↗</span></button>
+          <button data-prompt="Help me build a project" type="button"><span class="suggestion-icon">&lt;/&gt;</span><span class="suggestion-copy"><strong>Build</strong><small>Code and create projects</small></span><span class="suggestion-arrow">↗</span></button>
+          <button data-prompt="Research an interesting topic" type="button"><span class="suggestion-icon">◎</span><span class="suggestion-copy"><strong>Research</strong><small>Search and compare sources</small></span><span class="suggestion-arrow">↗</span></button>
         </div>
       </div>
-
       <div id="messages"></div>
-
     </section>
 
     <footer id="composer-area">
       <div id="composer">
         <button id="attach" class="composer-button" type="button" aria-label="Attach file">＋</button>
-
-        <textarea
-          id="messageInput"
-          rows="1"
-          placeholder="Message Nova..."
-          autocomplete="off"
-          spellcheck="true"
-        ></textarea>
-
+        <textarea id="messageInput" rows="1" placeholder="Message Nova..." autocomplete="off" spellcheck="true"></textarea>
         <button id="sendButton" class="send-button" type="button" aria-label="Send message">↑</button>
       </div>
-
-      <div id="composer-hint">
-        Nova can make mistakes. Check important information.
-      </div>
+      <div id="composer-hint">Nova can make mistakes. Check important information.</div>
     </footer>
-
   </main>
 </div>
 
 <script src="js/history.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/app.js"></script>
-
 </body>
 </html>
