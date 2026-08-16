@@ -21,21 +21,19 @@ function saveSettings(settings) {
 }
 
 function playClickSound() {
+  if (getSettings().sounds === false) return
   try {
     audioContext ||= new (window.AudioContext || window.webkitAudioContext)()
     if (audioContext.state === "suspended") audioContext.resume()
 
     const oscillator = audioContext.createOscillator()
     const gain = audioContext.createGain()
-
     oscillator.type = "sine"
     oscillator.frequency.setValueAtTime(720, audioContext.currentTime)
     oscillator.frequency.exponentialRampToValueAtTime(1080, audioContext.currentTime + 0.045)
-
     gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.025, audioContext.currentTime + 0.008)
     gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.075)
-
     oscillator.connect(gain)
     gain.connect(audioContext.destination)
     oscillator.start()
@@ -106,7 +104,6 @@ function createModalBase(title, subtitle, wide = true) {
   document.addEventListener("keydown", escape)
   backdrop.appendChild(panel)
   document.body.appendChild(backdrop)
-
   requestAnimationFrame(() => backdrop.classList.add("visible"))
   setTimeout(() => panel.querySelector(".nova-modal-x")?.focus(), 0)
 
@@ -115,24 +112,16 @@ function createModalBase(title, subtitle, wide = true) {
 
 function showNovaPanel(title, text) {
   const modal = createModalBase(title, "Nova workspace", false)
-  modal.body.innerHTML = `
-    <p class="nova-modal-text"></p>
-    <button class="nova-primary-button" type="button">Close</button>
-  `
+  modal.body.innerHTML = `<p class="nova-modal-text"></p><button class="nova-primary-button" type="button">Close</button>`
   modal.body.querySelector(".nova-modal-text").textContent = text
   modal.body.querySelector(".nova-primary-button").addEventListener("click", modal.close)
 }
 
 function showAuthPanel() {
   const modal = createModalBase("Sign in to Nova", "One account for your whole Nova workspace")
-
   modal.body.innerHTML = `
     <div class="auth-hero">
-      <div class="auth-visual">
-        <div class="auth-orbit orbit-a"></div>
-        <div class="auth-orbit orbit-b"></div>
-        <div class="auth-visual-orb">N</div>
-      </div>
+      <div class="auth-visual"><div class="auth-orbit orbit-a"></div><div class="auth-orbit orbit-b"></div><div class="auth-visual-orb">N</div></div>
       <h3>Welcome to Nova</h3>
       <p>Sync chats, settings, projects and library items across your devices when account services are connected.</p>
     </div>
@@ -143,22 +132,13 @@ function showAuthPanel() {
     </div>
     <div class="auth-note">Authentication is UI-ready. Real OAuth and account sessions belong in the Worker, not in frontend code.</div>
   `
-
   modal.body.querySelectorAll(".auth-button").forEach(button => {
-    button.addEventListener("click", () => {
-      showNovaPanel(`${button.dataset.provider} sign in`, "The Nova sign-in interface is ready. Connect OAuth in the Worker before accepting real credentials.")
-    })
+    button.addEventListener("click", () => showNovaPanel(`${button.dataset.provider} sign in`, "The Nova sign-in interface is ready. Connect OAuth in the Worker before accepting real credentials."))
   })
 }
 
 function toggleRow(id, title, description, checked) {
-  return `
-    <label class="settings-row settings-toggle-row">
-      <div class="settings-row-copy"><strong>${title}</strong><span>${description}</span></div>
-      <input id="${id}" type="checkbox" ${checked ? "checked" : ""}>
-      <span class="toggle-ui"></span>
-    </label>
-  `
+  return `<label class="settings-row settings-toggle-row"><div class="settings-row-copy"><strong>${title}</strong><span>${description}</span></div><input id="${id}" type="checkbox" ${checked ? "checked" : ""}><span class="toggle-ui"></span></label>`
 }
 
 function bindSettingToggle(modal, id, key) {
@@ -174,39 +154,22 @@ function showSettingsPanel() {
   const modal = createModalBase("Settings", "Make Nova feel like your own AI", true)
 
   modal.body.innerHTML = `
-    <div class="settings-profile-card settings-profile-hero">
-      <div class="settings-profile-image">N</div>
-      <div><strong>Nova workspace</strong><span>Not signed in · local mode</span></div>
-      <button class="nova-small-button" id="settingsSignIn" type="button">Sign in</button>
-    </div>
-
+    <div class="settings-profile-card settings-profile-hero"><div class="settings-profile-image">N</div><div><strong>Nova workspace</strong><span>Not signed in · local mode</span></div><button class="nova-small-button" id="settingsSignIn" type="button">Sign in</button></div>
     <div class="settings-section-title">Interface</div>
     <div class="settings-row"><div class="settings-row-copy"><strong>Glass interface</strong><span>Translucent panels, calm blue lighting and soft depth</span></div><span class="settings-pill">ON</span></div>
     ${toggleRow("soundToggle", "Glass click sounds", "Play a tiny soft sound when you interact with Nova", settings.sounds !== false)}
-
     <div class="settings-section-title">Intelligence</div>
     ${toggleRow("thinkingToggle", "Deep thinking", "Ask the Worker for deeper reasoning when the selected provider supports it", settings.thinking)}
     ${toggleRow("researchToggle", "Web research", "Allow Nova to use a server-side research tool when the Worker supports it", settings.research)}
     ${toggleRow("imageToggle", "Image generation", "Allow image requests to be routed through a configured image provider", settings.images)}
-
-    <div class="settings-row">
-      <div class="settings-row-copy"><strong>Response style</strong><span>Balanced · concise answers with room for depth</span></div>
-      <select id="styleSelect" class="nova-select"><option value="balanced">Balanced</option><option value="precise">Precise</option><option value="creative">Creative</option></select>
-    </div>
-
+    <div class="settings-row"><div class="settings-row-copy"><strong>Response style</strong><span>Balanced · concise answers with room for depth</span></div><select id="styleSelect" class="nova-select"><option value="balanced">Balanced</option><option value="precise">Precise</option><option value="creative">Creative</option></select></div>
     <div class="settings-section-title">Safety</div>
     ${toggleRow("matureToggle", "Mature content mode", "Age-gated content preferences. This never disables Nova's core safety protections", settings.matureMode)}
-    <div class="age-gate" id="ageGate" ${settings.matureMode ? "" : "hidden"}>
-      <strong>18+ confirmation</strong>
-      <span>Confirming age only changes the content preference. It does not unlock illegal, dangerous or harmful assistance.</span>
-      <button id="verifyAge" class="nova-small-button" type="button">Confirm 18+</button>
-    </div>
-
+    <div class="age-gate" id="ageGate" ${settings.matureMode ? "" : "hidden"}><strong>18+ confirmation</strong><span>Confirming age only changes the content preference. It does not unlock illegal, dangerous or harmful assistance.</span><button id="verifyAge" class="nova-small-button" type="button">${settings.ageVerified ? "18+ verified" : "Confirm 18+"}</button></div>
     <div class="settings-section-title">API & providers</div>
     <div class="connection-card"><div class="connection-icon">API</div><div class="connection-copy"><strong>Nova Worker</strong><span>Primary gateway for models, research and image providers</span></div><span class="settings-status"><i></i> Ready</span></div>
     <div class="connection-card"><div class="connection-icon">IMG</div><div class="connection-copy"><strong>Image provider</strong><span>Configured server-side. Keep private keys inside Worker secrets</span></div><span class="settings-pill">SERVER</span></div>
-    <div class="connection-card"><div class="connection-icon">WEB</div><div class="connection-copy"><strong>Research provider</strong><span>Search, fetch, cite and summarize through the Worker</span></div><span class="settings-pill">SERVER</span></div>
-
+    <div class="connection-card"><div class="connection-icon">WEB</div><div class="connection-copy"><strong>Research provider</strong><span>Search, fetch, compare and cite through the Worker</span></div><span class="settings-pill">SERVER</span></div>
     <div class="settings-section-title">Data</div>
     <div class="settings-row"><div class="settings-row-copy"><strong>Local chats</strong><span>Current conversations are stored in this browser</span></div><button id="clearChats" class="nova-small-button" type="button">Clear</button></div>
     <div class="settings-warning">Never place provider API keys in index.html or frontend JavaScript. Use Worker secrets and validate every tool request server-side.</div>
@@ -221,6 +184,7 @@ function showSettingsPanel() {
   modal.body.querySelector("#matureToggle").addEventListener("change", event => {
     const next = getSettings()
     next.matureMode = event.target.checked
+    if (!event.target.checked) next.ageVerified = false
     saveSettings(next)
     modal.body.querySelector("#ageGate").hidden = !event.target.checked
   })
@@ -250,7 +214,6 @@ function showToolPanel(kind) {
   const settings = getSettings()
   const isWeb = kind === "web"
   const modal = createModalBase(isWeb ? "Web research" : "Image generation", isWeb ? "Ground answers in fresh sources" : "Create visuals through a server-side image provider", true)
-
   modal.body.innerHTML = isWeb ? `
     <div class="tool-hero"><div class="tool-hero-icon">◎</div><div><strong>Research mode</strong><span>Search → read → compare → cite</span></div></div>
     ${toggleRow("toolResearch", "Enable research requests", "Nova may ask the Worker to search and summarize current sources", settings.research)}
@@ -263,15 +226,12 @@ function showToolPanel(kind) {
     <div class="settings-warning">Do not expose image API keys in the frontend. The Worker should validate prompts, call the provider and return the result.</div>
   `
 
-  const id = isWeb ? "toolResearch" : "toolImages"
-  const key = isWeb ? "research" : "images"
-  bindSettingToggle(modal, id, key)
+  bindSettingToggle(modal, isWeb ? "toolResearch" : "toolImages", isWeb ? "research" : "images")
 }
 
 function showModelPanel() {
   const settings = getSettings()
   const modal = createModalBase("Nova intelligence", "Choose how much work Nova asks the backend to do", true)
-
   modal.body.innerHTML = `
     <div class="model-card active"><div class="model-card-icon">N</div><div class="model-card-copy"><strong>Nova balanced</strong><span>Fast everyday routing with clean answers</span></div><span class="settings-status"><i></i> Active</span></div>
     ${toggleRow("modelThinkingToggle", "Deep thinking", "Send a reasoning preference to the Worker when supported", settings.thinking)}
@@ -279,7 +239,6 @@ function showModelPanel() {
     ${toggleRow("modelImageToggle", "Image generation", "Permit image requests through the configured provider", settings.images)}
     <div class="settings-warning">The frontend only expresses preferences. The Worker decides which providers, tools and safety checks are actually available.</div>
   `
-
   bindSettingToggle(modal, "modelThinkingToggle", "thinking")
   bindSettingToggle(modal, "modelResearchToggle", "research")
   bindSettingToggle(modal, "modelImageToggle", "images")
