@@ -2,6 +2,7 @@ const API_URL =
   "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 
 const STORAGE_KEY = "nova_chats_v2"
+const SETTINGS_KEY = "nova_settings_v1"
 
 let currentChat = null
 let generating = false
@@ -23,12 +24,18 @@ function getChats() {
 
 function saveChats(chats) {
   try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(chats.slice(0, 100))
-    )
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats.slice(0, 100)))
   } catch (error) {
     console.error("Nova history error:", error)
+  }
+}
+
+function getNovaSettings() {
+  try {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")
+    return settings && typeof settings === "object" ? settings : {}
+  } catch {
+    return {}
   }
 }
 
@@ -115,6 +122,8 @@ async function sendMessage() {
   `
 
   try {
+    const settings = getNovaSettings()
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -122,7 +131,8 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         message: text,
-        history: currentChat.messages.slice(-12)
+        history: currentChat.messages.slice(-12),
+        thinking: Boolean(settings.thinking)
       })
     })
 
