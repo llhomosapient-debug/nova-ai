@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Nova AI</title>
+  <title>Nova</title>
 
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/chat.css">
@@ -12,147 +12,162 @@
 
 <body>
 
-  <div id="app">
+<div id="app">
 
-    <aside id="sidebar">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
 
-      <div class="brand">
-        <div class="nova-logo">N</div>
-        <span>Nova</span>
+    <div class="brand">
+      <div class="nova-logo">N</div>
+      <span>Nova</span>
+    </div>
+
+    <button id="newChat">
+      <span>＋</span>
+      New chat
+    </button>
+
+    <button id="searchChats">
+      Search
+    </button>
+
+    <div class="sidebar-section">
+
+      <div class="section-title">
+        Chats
       </div>
 
-      <button id="newChat">
-        <span>＋</span>
-        New chat
+      <div id="chatHistory"></div>
+
+    </div>
+
+    <div class="sidebar-bottom">
+
+      <button id="projects">
+        Projects
       </button>
 
-      <button id="searchChats">
-        Search chats
+      <button id="library">
+        Library
       </button>
 
-      <div class="sidebar-section">
-        <div class="section-title">Chats</div>
-        <div id="chatHistory"></div>
+      <button id="plugins">
+        Plugins
+      </button>
+
+      <button id="settings">
+        Settings
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <header id="topbar">
+
+      <button id="mobileMenu">
+        ☰
+      </button>
+
+      <button class="model-selector" id="modelSelector">
+        <strong>Nova</strong>
+        <span>⌄</span>
+      </button>
+
+      <div class="topbar-right">
+        <span id="status">Online</span>
       </div>
 
-      <div class="sidebar-bottom">
-
-        <button id="projects">
-          Projects
-        </button>
-
-        <button id="library">
-          Library
-        </button>
-
-        <button id="plugins">
-          Plugins
-        </button>
-
-        <button id="settings">
-          Settings
-        </button>
-
-      </div>
-
-    </aside>
+    </header>
 
 
-    <main id="main">
+    <!-- CHAT -->
+    <section id="chat">
 
-      <header id="topbar">
+      <div id="welcome">
 
-        <button id="mobileMenu">
-          ☰
-        </button>
-
-        <div class="model-selector">
-          <strong>Nova</strong>
-          <span>▾</span>
+        <div class="big-logo">
+          N
         </div>
 
-        <div class="topbar-right">
-          <span id="status">Online</span>
-        </div>
+        <h1>
+          How can I help?
+        </h1>
 
-      </header>
+        <p>
+          Ask Nova anything
+        </p>
 
+        <div class="suggestions">
 
-      <section id="chat">
-
-        <div id="welcome">
-
-          <div class="big-logo">
-            N
-          </div>
-
-          <h1>How can I help?</h1>
-
-          <p>
-            Ask Nova anything
-          </p>
-
-          <div class="suggestions">
-
-            <button data-prompt="Explain something to me">
-              Explain something
-            </button>
-
-            <button data-prompt="Help me write something">
-              Help me write
-            </button>
-
-            <button data-prompt="Help me code something">
-              Help me code
-            </button>
-
-            <button data-prompt="Give me an idea">
-              Give me an idea
-            </button>
-
-          </div>
-
-        </div>
-
-        <div id="messages"></div>
-
-      </section>
-
-
-      <footer id="composer-area">
-
-        <div id="composer">
-
-          <button id="attach">
-            ＋
+          <button data-prompt="Explain something to me">
+            Explain something
           </button>
 
-          <textarea
-            id="messageInput"
-            placeholder="Message Nova..."
-            rows="1"
-          ></textarea>
+          <button data-prompt="Help me write something">
+            Help me write
+          </button>
 
-          <button id="sendButton">
-            ↑
+          <button data-prompt="Help me code something">
+            Help me code
+          </button>
+
+          <button data-prompt="Give me an idea">
+            Give me an idea
           </button>
 
         </div>
 
-        <div id="composer-hint">
-          Nova can make mistakes. Check important information.
-        </div>
+      </div>
 
-      </footer>
+      <div id="messages"></div>
 
-    </main>
-
-  </div>
+    </section>
 
 
-  <script src="js/history.js"></script>
-  <script src="js/chat.js"></script>
-  <script src="js/app.js"></script>
+    <!-- COMPOSER -->
+    <footer id="composer-area">
+
+      <div id="composer">
+
+        <button id="attach" title="Attach">
+          ＋
+        </button>
+
+        <textarea
+          id="messageInput"
+          placeholder="Message Nova..."
+          rows="1"
+          autocomplete="off"
+        ></textarea>
+
+        <button
+          id="sendButton"
+          title="Send"
+        >
+          ↑
+        </button>
+
+      </div>
+
+      <div id="composer-hint">
+        Nova can make mistakes. Check important information.
+      </div>
+
+    </footer>
+
+  </main>
+
+</div>
+
+
+<script src="js/history.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
