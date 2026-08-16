@@ -232,37 +232,45 @@
   gap: 4px;
 }
 
+.chat-history-row .chat-history-item {
+  flex: 1;
+  min-width: 0;
+}
+
 .chat-delete {
-  appearance: none !important;
-  -webkit-appearance: none !important;
+  all: unset;
 
-  width: 28px !important;
-  height: 28px !important;
-
-  padding: 0 !important;
-  margin: 0 !important;
-
-  border: 1px solid transparent !important;
-  border-radius: 8px !important;
-
-  background: transparent !important;
-  background-image: none !important;
-
-  color: rgba(255,255,255,.35) !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
 
   display: grid !important;
   place-items: center !important;
 
-  font-size: 17px !important;
-  line-height: 1 !important;
+  border-radius: 8px !important;
+
+  cursor: pointer;
 
   opacity: 0;
-  cursor: pointer;
+
+  position: relative;
 
   transition:
     opacity .15s ease,
-    background .15s ease,
-    color .15s ease;
+    background .15s ease;
+}
+
+.chat-delete::before {
+  content: "×";
+
+  font-family: Arial, sans-serif;
+
+  font-size: 16px;
+  font-weight: 400;
+
+  line-height: 1;
+
+  color: rgba(255,255,255,.4);
 }
 
 .chat-history-row:hover .chat-delete {
@@ -270,9 +278,11 @@
 }
 
 .chat-delete:hover {
-  background: rgba(255,255,255,.08) !important;
-  color: white !important;
-  border-color: rgba(255,255,255,.08) !important;
+  background: rgba(255,255,255,.07);
+}
+
+.chat-delete:hover::before {
+  color: white;
 }
 
 .chat-delete:active {
