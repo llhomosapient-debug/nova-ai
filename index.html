@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="theme-color" content="#070709">
   <meta name="color-scheme" content="dark">
-
   <title>Nova</title>
 
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/chat.css">
+  <link rel="stylesheet" href="css/settings.css">
 </head>
 
 <body>
@@ -26,20 +25,19 @@
 
       <div class="brand">
         <div class="nova-symbol">N</div>
-
         <div class="brand-copy">
           <strong>Nova</strong>
           <span>AI workspace</span>
         </div>
       </div>
 
-      <button id="newChat" class="new-chat">
+      <button id="newChat" class="new-chat" type="button">
         <span class="new-chat-icon">＋</span>
         <span>New chat</span>
         <kbd>⌘ K</kbd>
       </button>
 
-      <button id="searchChats" class="nav-button">
+      <button id="searchChats" class="nav-button" type="button">
         <span class="nav-icon">⌕</span>
         <span>Search</span>
         <kbd>⌘ F</kbd>
@@ -50,179 +48,118 @@
     <div class="sidebar-scroll">
 
       <div class="nav-section">
+        <div class="section-label">Workspace</div>
 
-        <div class="section-label">
-          Workspace
-        </div>
-
-        <button id="projects" class="nav-button">
+        <button id="projects" class="nav-button" type="button">
           <span class="nav-icon">◇</span>
           <span>Projects</span>
         </button>
 
-        <button id="library" class="nav-button">
+        <button id="library" class="nav-button" type="button">
           <span class="nav-icon">▱</span>
           <span>Library</span>
         </button>
 
-        <button id="plugins" class="nav-button">
+        <button id="plugins" class="nav-button" type="button">
           <span class="nav-icon">⌘</span>
           <span>Plugins</span>
         </button>
-
       </div>
 
       <div class="nav-section recent-section">
-
-        <div class="section-label">
-          Recent
-        </div>
-
+        <div class="section-label">Recent</div>
         <div id="chatHistory"></div>
-
       </div>
 
     </div>
 
     <div class="sidebar-bottom">
-
-      <button id="settings" class="profile-button">
-
-        <div class="profile-avatar">
-          N
-        </div>
-
+      <button id="settings" class="profile-button" type="button">
+        <div class="profile-avatar">N</div>
         <div class="profile-copy">
           <strong>Nova</strong>
           <span>Settings</span>
         </div>
-
         <span class="profile-more">•••</span>
-
       </button>
-
     </div>
 
   </aside>
 
-
   <main id="main">
 
     <header id="topbar">
+      <button id="mobileMenu" class="icon-button" type="button" aria-label="Open menu">☰</button>
 
-      <button id="mobileMenu" class="icon-button">
-        ☰
-      </button>
-
-      <button id="modelSelector" class="model-selector">
-
+      <button id="modelSelector" class="model-selector" type="button">
         <span class="model-status"></span>
-
         <span>Nova</span>
-
         <span class="model-arrow">⌄</span>
-
       </button>
 
       <div class="topbar-space"></div>
 
-      <button id="shareButton" class="icon-button">
-        ↗
-      </button>
-
+      <button id="shareButton" class="icon-button" type="button" aria-label="Share">↗</button>
     </header>
-
 
     <section id="chat">
 
       <div id="welcome">
-
         <div class="hero-orb">
-
-          <div class="hero-orb-inner">
-            N
-          </div>
-
+          <div class="hero-orb-inner">N</div>
         </div>
 
-        <div class="hero-label">
-          NOVA AI
-        </div>
+        <div class="hero-label">NOVA AI</div>
 
-        <h1>
-          What are we building today?
-        </h1>
-
-        <p>
-          Ask anything. Build anything. Explore anything.
-        </p>
+        <h1>What are we building today?</h1>
+        <p>Ask anything. Build anything. Explore anything.</p>
 
         <div class="suggestions">
-
-          <button data-prompt="Explain a difficult concept simply">
+          <button data-prompt="Explain a difficult concept simply" type="button">
             <span class="suggestion-icon">✦</span>
-
             <span class="suggestion-copy">
               <strong>Explain</strong>
               <small>Break down something difficult</small>
             </span>
-
             <span class="suggestion-arrow">↗</span>
           </button>
 
-          <button data-prompt="Help me write something">
+          <button data-prompt="Help me write something" type="button">
             <span class="suggestion-icon">Aa</span>
-
             <span class="suggestion-copy">
               <strong>Write</strong>
               <small>Create or improve something</small>
             </span>
-
             <span class="suggestion-arrow">↗</span>
           </button>
 
-          <button data-prompt="Help me build a project">
+          <button data-prompt="Help me build a project" type="button">
             <span class="suggestion-icon">&lt;/&gt;</span>
-
             <span class="suggestion-copy">
               <strong>Build</strong>
               <small>Code and create projects</small>
             </span>
-
             <span class="suggestion-arrow">↗</span>
           </button>
 
-          <button data-prompt="Give me some interesting ideas">
+          <button data-prompt="Give me some interesting ideas" type="button">
             <span class="suggestion-icon">✧</span>
-
             <span class="suggestion-copy">
               <strong>Explore</strong>
               <small>Discover something new</small>
             </span>
-
             <span class="suggestion-arrow">↗</span>
           </button>
-
         </div>
-
       </div>
 
       <div id="messages"></div>
 
     </section>
 
-
     <footer id="composer-area">
-
       <div id="composer">
-
-        <button
-          id="attach"
-          class="composer-button"
-          aria-label="Attach file"
-        >
-          ＋
-        </button>
+        <button id="attach" class="composer-button" type="button" aria-label="Attach file">＋</button>
 
         <textarea
           id="messageInput"
@@ -232,24 +169,15 @@
           spellcheck="true"
         ></textarea>
 
-        <button
-          id="sendButton"
-          class="send-button"
-          aria-label="Send message"
-        >
-          ↑
-        </button>
-
+        <button id="sendButton" class="send-button" type="button" aria-label="Send message">↑</button>
       </div>
 
       <div id="composer-hint">
         Nova can make mistakes. Check important information.
       </div>
-
     </footer>
 
   </main>
-
 </div>
 
 <script src="js/history.js"></script>
