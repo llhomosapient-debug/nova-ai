@@ -3,191 +3,425 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nova</title>
+<title>Nova AI</title>
 
 <style>
 *{box-sizing:border-box}
 
+:root{
+  --bg:#0b0d11;
+  --panel:#11141a;
+  --panel2:#171a21;
+  --border:#262b35;
+  --text:#f5f7fa;
+  --muted:#8b93a1;
+  --hover:#1d222b;
+  --accent:#ffffff;
+}
+
+body.light{
+  --bg:#f7f7f8;
+  --panel:#ffffff;
+  --panel2:#f0f1f3;
+  --border:#dedfe3;
+  --text:#17181b;
+  --muted:#6d7179;
+  --hover:#e9eaed;
+  --accent:#111111;
+}
+
+*{
+  scrollbar-width:thin;
+  scrollbar-color:#343a45 transparent;
+}
+
 body{
-margin:0;
-background:#0b0d12;
-color:#f5f5f5;
-font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-height:100vh;
-overflow:hidden
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  height:100vh;
+  overflow:hidden;
+}
+
+button,input,textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
 }
 
 .app{
-display:flex;
-height:100vh
+  height:100vh;
+  display:flex;
 }
 
+/* SIDEBAR */
+
 .sidebar{
-width:250px;
-background:#11141b;
-border-right:1px solid #242833;
-padding:18px;
-display:flex;
-flex-direction:column
+  width:260px;
+  background:var(--panel);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:14px;
+  transition:.2s;
 }
 
 .logo{
-font-size:21px;
-font-weight:700;
-margin-bottom:25px
+  font-size:21px;
+  font-weight:700;
+  padding:10px 12px 18px;
 }
 
-.newchat{
-border:1px solid #303541;
-background:#191d26;
-color:white;
-border-radius:10px;
-padding:12px;
-cursor:pointer;
-font-size:14px
+.new-chat{
+  width:100%;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:10px;
+  padding:11px;
+  text-align:left;
 }
 
-.newchat:hover{
-background:#222733
+.new-chat:hover{
+  background:var(--hover);
+}
+
+.search{
+  margin-top:10px;
+  width:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--text);
+  padding:11px;
+  border-radius:9px;
+}
+
+.search:hover{
+  background:var(--hover);
+}
+
+.history{
+  margin-top:15px;
+  flex:1;
+  overflow:auto;
+}
+
+.history-title{
+  color:var(--muted);
+  font-size:12px;
+  padding:8px 10px;
+}
+
+.chat-item{
+  padding:10px;
+  border-radius:9px;
+  color:var(--text);
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.chat-item:hover{
+  background:var(--hover);
 }
 
 .sidebar-bottom{
-margin-top:auto;
-color:#858b9b;
-font-size:13px
+  border-top:1px solid var(--border);
+  padding-top:10px;
 }
 
+.side-button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  padding:11px;
+  text-align:left;
+  border-radius:9px;
+}
+
+.side-button:hover{
+  background:var(--hover);
+}
+
+/* MAIN */
+
 .main{
-flex:1;
-display:flex;
-flex-direction:column;
-min-width:0
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
 }
 
 .topbar{
-height:60px;
-border-bottom:1px solid #242833;
-display:flex;
-align-items:center;
-padding:0 22px;
-font-weight:600
+  height:60px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
 }
 
-.online{
-margin-left:10px;
-font-size:12px;
-color:#7d8597
+.model{
+  font-weight:600;
 }
+
+.status{
+  color:#68d391;
+  font-size:12px;
+  margin-left:8px;
+}
+
+.menu{
+  display:none;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  font-size:22px;
+}
+
+/* CHAT */
 
 .chat{
-flex:1;
-overflow-y:auto;
-padding:30px 15%;
+  flex:1;
+  overflow-y:auto;
+  padding:35px 15%;
 }
 
 .welcome{
-height:100%;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-color:#8b91a1
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  text-align:center;
 }
 
 .welcome h1{
-color:white;
-font-size:34px;
-margin:0 0 8px
+  margin:0 0 8px;
+  font-size:34px;
+}
+
+.welcome p{
+  color:var(--muted);
+  margin:0;
 }
 
 .message{
-display:flex;
-margin-bottom:26px
+  display:flex;
+  margin-bottom:25px;
 }
 
 .user{
-justify-content:flex-end
+  justify-content:flex-end;
 }
 
 .bubble{
-max-width:75%;
-padding:13px 16px;
-border-radius:15px;
-line-height:1.6;
-white-space:pre-wrap
+  max-width:78%;
+  padding:12px 15px;
+  border-radius:15px;
+  line-height:1.6;
+  white-space:pre-wrap;
 }
 
 .user .bubble{
-background:#252a35
+  background:var(--panel2);
 }
 
 .nova .bubble{
-background:transparent;
-padding-left:0
+  padding-left:0;
 }
+
+.message-actions{
+  margin-top:7px;
+  display:flex;
+  gap:5px;
+}
+
+.action{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:12px;
+  padding:4px 6px;
+  border-radius:6px;
+}
+
+.action:hover{
+  background:var(--hover);
+  color:var(--text);
+}
+
+/* COMPOSER */
 
 .composer{
-padding:15px 15%;
-border-top:1px solid #242833
+  padding:14px 15px 20px;
 }
 
-.input{
-max-width:900px;
-margin:auto;
-display:flex;
-align-items:end;
-gap:8px;
-background:#181c25;
-border:1px solid #303541;
-border-radius:15px;
-padding:8px
+.input-box{
+  max-width:900px;
+  margin:auto;
+  display:flex;
+  align-items:flex-end;
+  gap:7px;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:8px;
 }
 
 textarea{
-flex:1;
-resize:none;
-background:transparent;
-border:0;
-outline:0;
-color:white;
-font-size:15px;
-padding:10px;
-min-height:42px;
-max-height:150px
+  flex:1;
+  resize:none;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--text);
+  padding:10px;
+  min-height:42px;
+  max-height:160px;
 }
 
 .send{
-width:42px;
-height:42px;
-border:0;
-border-radius:11px;
-background:white;
-color:#08090c;
-font-size:19px;
-cursor:pointer
+  width:43px;
+  height:43px;
+  border:0;
+  border-radius:11px;
+  background:var(--accent);
+  color:var(--bg);
+  font-size:19px;
 }
 
 .send:disabled{
-opacity:.35
+  opacity:.4;
 }
+
+/* SETTINGS */
+
+.settings{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+}
+
+.settings.open{
+  display:flex;
+}
+
+.settings-box{
+  width:min(600px,92vw);
+  max-height:85vh;
+  overflow:auto;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 20px 70px rgba(0,0,0,.4);
+}
+
+.settings-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.settings-header h2{
+  margin:0;
+}
+
+.close{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:24px;
+}
+
+.setting{
+  padding:16px 0;
+  border-top:1px solid var(--border);
+}
+
+.setting-title{
+  font-weight:600;
+}
+
+.setting-description{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+
+.setting select{
+  margin-top:10px;
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px;
+}
+
+.toggle{
+  float:right;
+  width:42px;
+  height:23px;
+  border-radius:20px;
+  border:0;
+  background:#343a45;
+}
+
+.toggle.active{
+  background:#68d391;
+}
+
+.about{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:20px;
+}
+
+/* MOBILE */
 
 @media(max-width:800px){
 
 .sidebar{
-display:none
+  position:fixed;
+  left:-270px;
+  top:0;
+  bottom:0;
+  z-index:20;
+  box-shadow:10px 0 40px rgba(0,0,0,.3);
+}
+
+.sidebar.open{
+  left:0;
+}
+
+.menu{
+  display:block;
 }
 
 .chat{
-padding:20px 15px
+  padding:25px 14px;
 }
 
 .composer{
-padding:12px
+  padding:10px;
 }
 
 .bubble{
-max-width:88%
+  max-width:90%;
 }
+
 }
 </style>
 </head>
@@ -196,56 +430,186 @@ max-width:88%
 
 <div class="app">
 
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
 
 <div class="logo">Nova</div>
 
-<button class="newchat" onclick="newChat()">
-+ New chat
-</button>
+<button class="new-chat" onclick="newChat()">＋ New chat</button>
+
+<input
+class="search"
+id="search"
+placeholder="Search chats..."
+oninput="searchChats()"
+>
+
+<div class="history">
+
+<div class="history-title">Today</div>
+
+<div id="historyList"></div>
+
+</div>
 
 <div class="sidebar-bottom">
-Nova AI<br>
-Llama model
+
+<button class="side-button" onclick="openSettings()">
+⚙ Settings
+</button>
+
 </div>
 
 </aside>
 
-<section class="main">
+<main class="main">
 
 <header class="topbar">
-Nova
-<span class="online">● online</span>
+
+<button class="menu" onclick="toggleSidebar()">☰</button>
+
+<div>
+<span class="model">Nova</span>
+<span class="status">● online</span>
+</div>
+
 </header>
 
-<main class="chat" id="chat">
+<section class="chat" id="chat">
 
 <div class="welcome" id="welcome">
+
 <h1>How can I help?</h1>
-<div>Talk to Nova</div>
-</div>
 
-</main>
-
-<div class="composer">
-
-<div class="input">
-
-<textarea
-id="message"
-placeholder="Message Nova..."
-rows="1"
-></textarea>
-
-<button class="send" id="send" onclick="sendMessage()">↑</button>
-
-</div>
+<p>Talk to Nova</p>
 
 </div>
 
 </section>
 
+<div class="composer">
+
+<div class="input-box">
+
+<textarea
+id="message"
+rows="1"
+placeholder="Message Nova..."
+></textarea>
+
+<button
+class="send"
+id="send"
+onclick="sendMessage()"
+>↑</button>
+
 </div>
+
+</div>
+
+</main>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div class="settings" id="settings">
+
+<div class="settings-box">
+
+<div class="settings-header">
+
+<h2>Settings</h2>
+
+<button class="close" onclick="closeSettings()">×</button>
+
+</div>
+
+<div class="setting">
+
+<div class="setting-title">Appearance</div>
+
+<div class="setting-description">
+Choose how Nova looks
+</div>
+
+<select id="appearance" onchange="changeAppearance()">
+
+<option value="dark">Dark</option>
+<option value="light">Light</option>
+
+</select>
+
+</div>
+
+<div class="setting">
+
+<div class="setting-title">Model</div>
+
+<div class="setting-description">
+Current AI model
+</div>
+
+<select>
+
+<option>Llama 3.1 8B</option>
+
+</select>
+
+</div>
+
+<div class="setting">
+
+<div class="setting-title">Memory</div>
+
+<div class="setting-description">
+Remember messages in the current chat
+</div>
+
+<button
+class="toggle active"
+id="memoryToggle"
+onclick="toggleSetting(this)"
+></button>
+
+</div>
+
+<div class="setting">
+
+<div class="setting-title">Web search</div>
+
+<div class="setting-description">
+Allow Nova to use web search
+</div>
+
+<button
+class="toggle"
+onclick="toggleSetting(this)"
+></button>
+
+</div>
+
+<div class="setting">
+
+<div class="setting-title">Backup AI</div>
+
+<div class="setting-description">
+Backup model will be added later
+</div>
+
+</div>
+
+<div class="about">
+
+Nova AI<br>
+Frontend version 0.2
+
+</div>
+
+</div>
+
+</div>
+
 
 <script>
 
@@ -253,6 +617,12 @@ const input=document.getElementById("message");
 const chat=document.getElementById("chat");
 const send=document.getElementById("send");
 const welcome=document.getElementById("welcome");
+const historyList=document.getElementById("historyList");
+
+let chats=[];
+
+
+/* ENTER TO SEND */
 
 input.addEventListener("keydown",e=>{
 
@@ -265,6 +635,9 @@ sendMessage();
 
 });
 
+
+/* SEND */
+
 async function sendMessage(){
 
 const text=input.value.trim();
@@ -276,6 +649,7 @@ welcome.style.display="none";
 addMessage("user",text);
 
 input.value="";
+
 send.disabled=true;
 
 const thinking=addMessage(
@@ -328,6 +702,9 @@ input.focus();
 
 }
 
+
+/* ADD MESSAGE */
+
 function addMessage(type,text){
 
 const message=document.createElement("div");
@@ -342,6 +719,36 @@ bubble.textContent=text;
 
 message.appendChild(bubble);
 
+if(type==="nova"){
+
+const actions=document.createElement("div");
+
+actions.className="message-actions";
+
+const copy=document.createElement("button");
+
+copy.className="action";
+
+copy.textContent="Copy";
+
+copy.onclick=()=>{
+
+navigator.clipboard.writeText(text);
+
+copy.textContent="Copied";
+
+setTimeout(()=>{
+copy.textContent="Copy";
+},1000);
+
+};
+
+actions.appendChild(copy);
+
+message.appendChild(actions);
+
+}
+
 chat.appendChild(message);
 
 chat.scrollTop=chat.scrollHeight;
@@ -349,6 +756,9 @@ chat.scrollTop=chat.scrollHeight;
 return message;
 
 }
+
+
+/* NEW CHAT */
 
 function newChat(){
 
@@ -361,6 +771,91 @@ welcome.style.display="flex";
 input.value="";
 
 input.focus();
+
+}
+
+
+/* SETTINGS */
+
+function openSettings(){
+
+document
+.getElementById("settings")
+.classList.add("open");
+
+}
+
+function closeSettings(){
+
+document
+.getElementById("settings")
+.classList.remove("open");
+
+}
+
+
+/* APPEARANCE */
+
+function changeAppearance(){
+
+const value=
+document.getElementById("appearance").value;
+
+if(value==="light"){
+
+document.body.classList.add("light");
+
+}else{
+
+document.body.classList.remove("light");
+
+}
+
+}
+
+
+/* TOGGLES */
+
+function toggleSetting(button){
+
+button.classList.toggle("active");
+
+}
+
+
+/* MOBILE SIDEBAR */
+
+function toggleSidebar(){
+
+document
+.getElementById("sidebar")
+.classList.toggle("open");
+
+}
+
+
+/* SEARCH */
+
+function searchChats(){
+
+const query=
+document
+.getElementById("search")
+.value
+.toLowerCase();
+
+document
+.querySelectorAll(".chat-item")
+.forEach(item=>{
+
+item.style.display=
+item.textContent
+.toLowerCase()
+.includes(query)
+?"block"
+:"none";
+
+});
 
 }
 
