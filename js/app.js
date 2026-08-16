@@ -42,12 +42,18 @@ mobileMenu?.addEventListener("click", () => {
   sidebar?.classList.toggle("open")
 })
 
-document.querySelectorAll(".suggestions button").forEach(button => {
-  button.addEventListener("click", () => {
-    input.value = button.dataset.prompt || ""
-    resizeInput()
-    input.focus()
+document
+  .querySelectorAll(".suggestions button")
+  .forEach(button => {
+    button.addEventListener("click", () => {
+      if (!input) return
+
+      input.value =
+        button.dataset.prompt || ""
+
+      resizeInput()
+      input.focus()
+    })
   })
-})
 
 input?.focus()
