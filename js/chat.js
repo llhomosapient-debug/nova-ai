@@ -1,6 +1,6 @@
 const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 const STORAGE_KEY = "nova_chats_v2"
-const SETTINGS_KEY = "nova_settings_v2"
+const NOVA_SETTINGS_KEY = "nova_settings_v2"
 
 let currentChat = null
 let generating = false
@@ -12,7 +12,7 @@ const inputElement = document.getElementById("messageInput")
 const sendElement = document.getElementById("sendButton")
 
 function makeId() {
-  if (globalThis.crypto?.randomUUID) return crypto.randomUUID()
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID()
   return "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2)
 }
 
@@ -35,7 +35,7 @@ function saveChats(chats) {
 
 function getNovaSettings() {
   try {
-    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")
+    const settings = JSON.parse(localStorage.getItem(NOVA_SETTINGS_KEY) || "{}")
     return settings && typeof settings === "object" ? settings : {}
   } catch {
     return {}
