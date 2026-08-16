@@ -1,77 +1,110 @@
 const API_URL =
   "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 
-let currentChatId = null
-let messages = []
+let currentChat = null
 let generating = false
 
-const chat = document.getElementById("chat")
-const messagesEl = document.getElementById("messages")
-const input = document.getElementById("messageInput")
-const sendButton = document.getElementById("sendButton")
-const welcome = document.getElementById("welcome")
+const chatElement =
+  document.getElementById("chat")
+
+const messagesElement =
+  document.getElementById("messages")
+
+const welcomeElement =
+  document.getElementById("welcome")
+
+const inputElement =
+  document.getElementById("messageInput")
+
+const sendElement =
+  document.getElementById("sendButton")
 
 function createChat() {
-  currentChatId = crypto.randomUUID()
-  messages = []
 
-  messagesEl.innerHTML = ""
-  welcome.style.display = "block"
+  currentChat = {
+    id: crypto.randomUUID(),
+    title: "New chat",
+    messages: [],
+    updated: Date.now()
+  }
 
-  saveCurrentChat()
+  messagesElement.innerHTML = ""
+  welcomeElement.style.display = ""
+
+  renderHistory()
 }
 
 function addMessage(role, text) {
-  welcome.style.display = "none"
 
-  const message = document.createElement("div")
-  message.className = `message ${role}`
+  welcomeElement.style.display = "none"
 
-  const avatar = document.createElement("div")
-  avatar.className = "message-avatar"
-  avatar.textContent = role === "user" ? "U" : "N"
+  const message =
+    document.createElement("div")
 
-  const content = document.createElement("div")
-  content.className = "message-content"
+  message.className =
+    `message ${role}`
+
+  const content =
+    document.createElement("div")
+
+  content.className =
+    "message-content"
+
   content.textContent = text
 
-  message.appendChild(avatar)
   message.appendChild(content)
+  messagesElement.appendChild(message)
 
-  messagesEl.appendChild(message)
-
-  chat.scrollTop = chat.scrollHeight
+  chatElement.scrollTop =
+    chatElement.scrollHeight
 
   return content
 }
 
 async function sendMessage() {
+
   if (generating) return
 
-  const text = input.value.trim()
+  const text =
+    inputElement.value.trim()
 
   if (!text) return
 
-  if (!currentChatId) {
+  if (!currentChat) {
     createChat()
   }
 
-  input.value = ""
-  input.style.height = "auto"
+  inputElement.value = ""
+  inputElement.style.height = "auto"
 
-  messages.push({
+  addMessage("user", text)
+
+  currentChat.messages.push({
     role: "user",
     content: text
   })
 
-  addMessage("user", text)
+  if (
+    currentChat.title === "New chat"
+  ) {
+    currentChat.title =
+      text.length > 45
+        ? text.slice(0, 45) + "..."
+        : text
+  }
+
+  currentChat.updated = Date.now()
+
+  saveChat(currentChat)
+  renderHistory()
 
   generating = true
-  sendButton.disabled = true
+  sendElement.disabled = true
 
-  const nova = addMessage("assistant", "")
+  const answerElement =
+    addMessage("assistant", "")
 
-  nova.innerHTML = `
+  answerElement.innerHTML = `
     <div class="typing">
       <span></span>
       <span></span>
@@ -80,159 +113,169 @@ async function sendMessage() {
   `
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: text,
-        history: messages.slice(-12)
-      })
-    })
 
-    const data = await response.json()
+    const response =
+      await fetch(API_URL, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          message: text,
+          history:
+            currentChat.messages.slice(-12)
+        })
+      })
+
+    let data
+
+    try {
+      data = await response.json()
+    } catch {
+      throw new Error(
+        "Nova returned an invalid response"
+      )
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || "Nova request failed")
+      throw new Error(
+        data.error ||
+        `Request failed ${response.status}`
+      )
     }
 
     const answer =
-      data.response ||
-      "Nova didn't return a response"
+      typeof data.response === "string"
+        ? data.response.trim()
+        : ""
 
-    nova.textContent = answer
+    if (!answer) {
+      throw new Error(
+        "Nova returned an empty response"
+      )
+    }
 
-    messages.push({
+    answerElement.textContent =
+      answer
+
+    currentChat.messages.push({
       role: "assistant",
       content: answer
     })
 
-    saveCurrentChat(text)
+    currentChat.updated = Date.now()
 
+    saveChat(currentChat)
     renderHistory()
 
   } catch (error) {
-    console.error(error)
 
-    nova.textContent =
-      "Nova couldn't connect right now"
+    console.error("Nova error:", error)
+
+    answerElement.textContent =
+      "Nova couldn't connect right now. Check the Worker and try again."
 
   } finally {
+
     generating = false
-    sendButton.disabled = false
-    input.focus()
+    sendElement.disabled = false
+
+    inputElement.focus()
+
   }
 }
 
 function loadChat(chatData) {
-  currentChatId = chatData.id
-  messages = chatData.messages || []
 
-  messagesEl.innerHTML = ""
+  currentChat = {
+    ...chatData,
+    messages:
+      Array.isArray(chatData.messages)
+        ? chatData.messages
+        : []
+  }
 
-  if (!messages.length) {
-    welcome.style.display = "block"
+  messagesElement.innerHTML = ""
+
+  if (!currentChat.messages.length) {
+    welcomeElement.style.display = ""
+    renderHistory()
     return
   }
 
-  welcome.style.display = "none"
+  welcomeElement.style.display = "none"
 
-  for (const message of messages) {
+  currentChat.messages.forEach(message => {
+
+    if (
+      message.role !== "user" &&
+      message.role !== "assistant"
+    ) {
+      return
+    }
+
     addMessage(
       message.role,
       message.content
     )
-  }
-
-  chat.scrollTop = chat.scrollHeight
+  })
 
   renderHistory()
-}
 
-function saveCurrentChat(firstMessage = "") {
-  if (!currentChatId) return
-
-  const chats =
-    JSON.parse(
-      localStorage.getItem("nova_chats") || "[]"
-    )
-
-  const existing =
-    chats.find(x => x.id === currentChatId)
-
-  const title =
-    existing?.title ||
-    firstMessage ||
-    "New chat"
-
-  const data = {
-    id: currentChatId,
-    title:
-      title.length > 45
-        ? title.slice(0, 45) + "..."
-        : title,
-    messages,
-    updated:
-      Date.now()
-  }
-
-  const filtered =
-    chats.filter(
-      x => x.id !== currentChatId
-    )
-
-  filtered.unshift(data)
-
-  localStorage.setItem(
-    "nova_chats",
-    JSON.stringify(filtered.slice(0, 100))
-  )
+  requestAnimationFrame(() => {
+    chatElement.scrollTop =
+      chatElement.scrollHeight
+  })
 }
 
 function renderHistory() {
-  const history =
+
+  const historyElement =
     document.getElementById("chatHistory")
 
-  if (!history) return
+  if (!historyElement) return
 
-  history.innerHTML = ""
+  historyElement.innerHTML = ""
 
-  const chats =
-    JSON.parse(
-      localStorage.getItem("nova_chats") || "[]"
-    )
+  const chats = getChats()
 
-  for (const item of chats) {
+  chats.forEach(chat => {
+
     const button =
       document.createElement("button")
 
     button.className =
       "chat-history-item"
 
-    if (item.id === currentChatId) {
+    if (
+      currentChat &&
+      chat.id === currentChat.id
+    ) {
       button.classList.add("active")
     }
 
     button.textContent =
-      item.title || "New chat"
+      chat.title || "New chat"
 
-    button.onclick = () => {
-      loadChat(item)
-    }
+    button.addEventListener(
+      "click",
+      () => loadChat(chat)
+    )
 
-    history.appendChild(button)
-  }
+    historyElement.appendChild(button)
+  })
 }
 
-function newChat() {
+function startNewChat() {
   createChat()
-  renderHistory()
-  input.focus()
+  inputElement.focus()
 }
 
 window.sendMessage = sendMessage
-window.newChat = newChat
+window.newChat = startNewChat
 window.loadChat = loadChat
+window.renderHistory = renderHistory
 
 renderHistory()
