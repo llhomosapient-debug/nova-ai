@@ -1,7 +1,6 @@
 const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
-const STORAGE_KEY = "nova_chats_v2"
-const NOVA_SETTINGS_KEY = "nova_settings_v2"
-const NOVA_REGISTERED_KEY = "nova_registered_v1"
+const NOVA_CHAT_SETTINGS_KEY = "nova_settings_v2"
+const NOVA_CHAT_AUTH_KEY = "nova_registered_v1"
 
 let currentChat = null
 let generating = false
@@ -17,31 +16,14 @@ function makeId() {
   return "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2)
 }
 
-function storage() {
-  return localStorage.getItem(NOVA_REGISTERED_KEY) === "true" ? localStorage : sessionStorage
-}
-
-function getChats() {
-  try {
-    const chats = JSON.parse(storage().getItem(STORAGE_KEY) || "[]")
-    return Array.isArray(chats) ? chats : []
-  } catch {
-    return []
-  }
-}
-
-function saveChats(chats) {
-  try {
-    storage().setItem(STORAGE_KEY, JSON.stringify(chats.slice(0, 100)))
-  } catch (error) {
-    console.error("Nova history error", error)
-  }
+function chatStorage() {
+  return localStorage.getItem(NOVA_CHAT_AUTH_KEY) === "true" ? localStorage : sessionStorage
 }
 
 function getNovaSettings() {
   try {
-    const store = storage()
-    const settings = JSON.parse(store.getItem(NOVA_SETTINGS_KEY) || "{}")
+    const value = chatStorage().getItem(NOVA_CHAT_SETTINGS_KEY)
+    const settings = value ? JSON.parse(value) : {}
     return settings && typeof settings === "object" ? settings : {}
   } catch {
     return {}
@@ -49,19 +31,14 @@ function getNovaSettings() {
 }
 
 function saveChat(chat) {
-  if (!chat?.id) return
-  const chats = getChats().filter(item => item.id !== chat.id)
+  if (!chat?.id || typeof window.getChats !== "function" || typeof window.saveChats !== "function") return
+  const chats = window.getChats().filter(item => item.id !== chat.id)
   chats.unshift(chat)
-  saveChats(chats)
+  window.saveChats(chats)
 }
 
 function createChat() {
-  currentChat = {
-    id: makeId(),
-    title: "New chat",
-    messages: [],
-    updated: Date.now()
-  }
+  currentChat = { id: makeId(), title: "New chat", messages: [], updated: Date.now() }
   messagesElement.innerHTML = ""
   welcomeElement.style.display = ""
   renderHistory()
@@ -92,14 +69,11 @@ function addImageMessage(url, alt = "Nova generated image") {
   image.alt = alt
   image.loading = "lazy"
   image.decoding = "async"
-  image.addEventListener("error", () => {
-    content.textContent = "Nova received an image result but the image could not be displayed"
-  })
+  image.addEventListener("error", () => { content.textContent = "Nova received an image result but it could not be displayed" })
   content.appendChild(image)
   message.appendChild(content)
   messagesElement.appendChild(message)
   requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
-  return message
 }
 
 function looksLikeImageRequest(text) {
@@ -116,10 +90,7 @@ async function sendMessage() {
   inputElement.style.height = "auto"
   addMessage("user", text)
   currentChat.messages.push({ role: "user", content: text })
-
-  if (currentChat.title === "New chat") {
-    currentChat.title = text.length > 45 ? text.slice(0, 45) + "..." : text
-  }
+  if (currentChat.title === "New chat") currentChat.title = text.length > 45 ? text.slice(0, 45) + "..." : text
   currentChat.updated = Date.now()
   saveChat(currentChat)
   renderHistory()
@@ -154,16 +125,15 @@ async function sendMessage() {
 
     let data
     try { data = await response.json() } catch { throw new Error("Nova returned an invalid response") }
-    if (!response.ok) throw new Error(data.error || `Request failed ${response.status}`)
+    if (!response.ok) throw new Error(data?.error || `Request failed ${response.status}`)
 
-    const imageUrl = data.image_url || data.imageUrl || (typeof data.image === "string" ? data.image : null) || (Array.isArray(data.images) ? data.images[0]?.url || data.images[0] : null)
-
+    const imageUrl = data?.image_url || data?.imageUrl || (typeof data?.image === "string" ? data.image : null) || (Array.isArray(data?.images) ? (data.images[0]?.url || data.images[0]) : null)
     if (imageUrl && imageRequest) {
       answerElement.parentElement?.remove()
       addImageMessage(imageUrl, data.image_alt || text)
       currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl })
     } else {
-      const answer = typeof data.response === "string" ? data.response.trim() : ""
+      const answer = typeof data?.response === "string" ? data.response.trim() : ""
       if (!answer) throw new Error("Nova returned an empty response")
       answerElement.textContent = answer
       currentChat.messages.push({ role: "assistant", content: answer })
@@ -173,8 +143,8 @@ async function sendMessage() {
     saveChat(currentChat)
     renderHistory()
   } catch (error) {
-    console.error("Nova error", error)
-    answerElement.textContent = "Nova couldn't connect right now. Check the Worker and try again."
+    console.error("Nova error:", error)
+    answerElement.textContent = error instanceof Error ? error.message : "Nova couldn't connect right now"
   } finally {
     generating = false
     sendElement.disabled = false
@@ -197,7 +167,8 @@ function loadChat(chatData) {
 }
 
 function deleteChat(chatId) {
-  saveChats(getChats().filter(chat => chat.id !== chatId))
+  if (typeof window.getChats !== "function" || typeof window.saveChats !== "function") return
+  window.saveChats(window.getChats().filter(chat => chat.id !== chatId))
   if (currentChat?.id === chatId) {
     currentChat = null
     messagesElement.innerHTML = ""
@@ -208,10 +179,9 @@ function deleteChat(chatId) {
 
 function renderHistory() {
   const historyElement = document.getElementById("chatHistory")
-  if (!historyElement) return
+  if (!historyElement || typeof window.getChats !== "function") return
   historyElement.innerHTML = ""
-
-  getChats().forEach(chat => {
+  window.getChats().forEach(chat => {
     const row = document.createElement("div")
     row.className = "chat-history-row"
     const button = document.createElement("button")
@@ -221,19 +191,13 @@ function renderHistory() {
     button.title = chat.title || "New chat"
     if (currentChat?.id === chat.id) button.classList.add("active")
     button.addEventListener("click", () => loadChat(chat))
-
     const deleteButton = document.createElement("button")
     deleteButton.type = "button"
     deleteButton.className = "chat-delete"
     deleteButton.setAttribute("aria-label", "Delete chat")
     deleteButton.title = "Delete chat"
     deleteButton.textContent = "×"
-    deleteButton.addEventListener("click", event => {
-      event.preventDefault()
-      event.stopPropagation()
-      deleteChat(chat.id)
-    })
-
+    deleteButton.addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); deleteChat(chat.id) })
     row.append(button, deleteButton)
     historyElement.appendChild(row)
   })
@@ -249,7 +213,6 @@ window.newChat = startNewChat
 window.loadChat = loadChat
 window.renderHistory = renderHistory
 window.deleteChat = deleteChat
-window.getChats = getChats
 window.getCurrentChat = () => currentChat
 
 renderHistory()
