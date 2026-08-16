@@ -56,7 +56,6 @@ function createChat() {
     messages: [],
     updated: Date.now()
   }
-
   messagesElement.innerHTML = ""
   welcomeElement.style.display = ""
   renderHistory()
@@ -65,54 +64,44 @@ function createChat() {
 
 function addMessage(role, text) {
   welcomeElement.style.display = "none"
-
   const message = document.createElement("div")
   message.className = `message ${role}`
-
   const content = document.createElement("div")
   content.className = "message-content"
   content.textContent = String(text ?? "")
-
   message.appendChild(content)
   messagesElement.appendChild(message)
-
-  requestAnimationFrame(() => {
-    chatElement.scrollTop = chatElement.scrollHeight
-  })
-
+  requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
   return content
 }
 
 async function sendMessage() {
   if (generating || !inputElement || !sendElement) return
-
   const text = inputElement.value.trim()
   if (!text) return
-
   if (!currentChat) createChat()
 
   inputElement.value = ""
   inputElement.style.height = "auto"
-
   addMessage("user", text)
   currentChat.messages.push({ role: "user", content: text })
 
   if (currentChat.title === "New chat") {
     currentChat.title = text.length > 45 ? text.slice(0, 45) + "..." : text
   }
-
   currentChat.updated = Date.now()
   saveChat(currentChat)
   renderHistory()
 
   generating = true
   sendElement.disabled = true
-
   const answerElement = addMessage("assistant", "")
   answerElement.innerHTML = `<div class="typing" aria-label="Nova is thinking"><span></span><span></span><span></span></div>`
 
   try {
     const settings = getNovaSettings()
+    const labEnabled = Boolean(settings.labMode)
+    const matureEnabled = Boolean(settings.matureMode && settings.ageVerified)
 
     const response = await fetch(API_URL, {
       method: "POST",
@@ -123,22 +112,16 @@ async function sendMessage() {
         thinking: Boolean(settings.thinking),
         research: Boolean(settings.research),
         images: Boolean(settings.images),
+        lab_mode: labEnabled,
         age_verified: Boolean(settings.ageVerified),
-        mature_mode: Boolean(settings.matureMode && settings.ageVerified),
+        mature_mode: matureEnabled,
         style: settings.style || "balanced"
       })
     })
 
     let data
-    try {
-      data = await response.json()
-    } catch {
-      throw new Error("Nova returned an invalid response")
-    }
-
-    if (!response.ok) {
-      throw new Error(data.error || `Request failed ${response.status}`)
-    }
+    try { data = await response.json() } catch { throw new Error("Nova returned an invalid response") }
+    if (!response.ok) throw new Error(data.error || `Request failed ${response.status}`)
 
     const answer = typeof data.response === "string" ? data.response.trim() : ""
     if (!answer) throw new Error("Nova returned an empty response")
@@ -160,49 +143,34 @@ async function sendMessage() {
 
 function loadChat(chatData) {
   if (!chatData) return
-
-  currentChat = {
-    ...chatData,
-    messages: Array.isArray(chatData.messages) ? chatData.messages : []
-  }
-
+  currentChat = { ...chatData, messages: Array.isArray(chatData.messages) ? chatData.messages : [] }
   messagesElement.innerHTML = ""
   welcomeElement.style.display = currentChat.messages.length ? "none" : ""
-
   currentChat.messages.forEach(message => {
-    if (message.role === "user" || message.role === "assistant") {
-      addMessage(message.role, message.content)
-    }
+    if (message.role === "user" || message.role === "assistant") addMessage(message.role, message.content)
   })
-
   renderHistory()
-  requestAnimationFrame(() => {
-    chatElement.scrollTop = chatElement.scrollHeight
-  })
+  requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
 }
 
 function deleteChat(chatId) {
   saveChats(getChats().filter(chat => chat.id !== chatId))
-
   if (currentChat?.id === chatId) {
     currentChat = null
     messagesElement.innerHTML = ""
     welcomeElement.style.display = ""
   }
-
   renderHistory()
 }
 
 function renderHistory() {
   const historyElement = document.getElementById("chatHistory")
   if (!historyElement) return
-
   historyElement.innerHTML = ""
 
   getChats().forEach(chat => {
     const row = document.createElement("div")
     row.className = "chat-history-row"
-
     const button = document.createElement("button")
     button.type = "button"
     button.className = "chat-history-item"
@@ -216,6 +184,7 @@ function renderHistory() {
     deleteButton.className = "chat-delete"
     deleteButton.setAttribute("aria-label", "Delete chat")
     deleteButton.title = "Delete chat"
+    deleteButton.textContent = "×"
     deleteButton.addEventListener("click", event => {
       event.preventDefault()
       event.stopPropagation()
