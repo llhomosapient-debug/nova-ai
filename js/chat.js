@@ -1,6 +1,7 @@
 const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 const STORAGE_KEY = "nova_chats_v2"
 const NOVA_SETTINGS_KEY = "nova_settings_v2"
+const NOVA_REGISTERED_KEY = "nova_registered_v1"
 
 let currentChat = null
 let generating = false
@@ -16,9 +17,13 @@ function makeId() {
   return "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2)
 }
 
+function storage() {
+  return localStorage.getItem(NOVA_REGISTERED_KEY) === "true" ? localStorage : sessionStorage
+}
+
 function getChats() {
   try {
-    const chats = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
+    const chats = JSON.parse(storage().getItem(STORAGE_KEY) || "[]")
     return Array.isArray(chats) ? chats : []
   } catch {
     return []
@@ -27,7 +32,7 @@ function getChats() {
 
 function saveChats(chats) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats.slice(0, 100)))
+    storage().setItem(STORAGE_KEY, JSON.stringify(chats.slice(0, 100)))
   } catch (error) {
     console.error("Nova history error", error)
   }
@@ -35,7 +40,8 @@ function saveChats(chats) {
 
 function getNovaSettings() {
   try {
-    const settings = JSON.parse(localStorage.getItem(NOVA_SETTINGS_KEY) || "{}")
+    const store = storage()
+    const settings = JSON.parse(store.getItem(NOVA_SETTINGS_KEY) || "{}")
     return settings && typeof settings === "object" ? settings : {}
   } catch {
     return {}
@@ -75,6 +81,31 @@ function addMessage(role, text) {
   return content
 }
 
+function addImageMessage(url, alt = "Nova generated image") {
+  welcomeElement.style.display = "none"
+  const message = document.createElement("div")
+  message.className = "message assistant image-message"
+  const content = document.createElement("div")
+  content.className = "message-content image-content"
+  const image = document.createElement("img")
+  image.src = url
+  image.alt = alt
+  image.loading = "lazy"
+  image.decoding = "async"
+  image.addEventListener("error", () => {
+    content.textContent = "Nova received an image result but the image could not be displayed"
+  })
+  content.appendChild(image)
+  message.appendChild(content)
+  messagesElement.appendChild(message)
+  requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
+  return message
+}
+
+function looksLikeImageRequest(text) {
+  return /\b(generate|create|make|draw|render|image|picture|png|illustration|logo|wallpaper)\b/i.test(text)
+}
+
 async function sendMessage() {
   if (generating || !inputElement || !sendElement) return
   const text = inputElement.value.trim()
@@ -100,21 +131,23 @@ async function sendMessage() {
 
   try {
     const settings = getNovaSettings()
-    const labEnabled = Boolean(settings.labMode)
-    const matureEnabled = Boolean(settings.matureMode && settings.ageVerified)
-
+    const imageRequest = Boolean(settings.images && looksLikeImageRequest(text))
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
         history: currentChat.messages.slice(-12),
+        model: settings.model || "nova-balanced",
         thinking: Boolean(settings.thinking),
         research: Boolean(settings.research),
         images: Boolean(settings.images),
-        lab_mode: labEnabled,
+        image_request: imageRequest,
+        image_format: "png",
+        image_size: settings.imageSize || "1024x1024",
+        lab_mode: Boolean(settings.labMode),
         age_verified: Boolean(settings.ageVerified),
-        mature_mode: matureEnabled,
+        mature_mode: Boolean(settings.matureMode && settings.ageVerified),
         style: settings.style || "balanced"
       })
     })
@@ -123,11 +156,19 @@ async function sendMessage() {
     try { data = await response.json() } catch { throw new Error("Nova returned an invalid response") }
     if (!response.ok) throw new Error(data.error || `Request failed ${response.status}`)
 
-    const answer = typeof data.response === "string" ? data.response.trim() : ""
-    if (!answer) throw new Error("Nova returned an empty response")
+    const imageUrl = data.image_url || data.imageUrl || (typeof data.image === "string" ? data.image : null) || (Array.isArray(data.images) ? data.images[0]?.url || data.images[0] : null)
 
-    answerElement.textContent = answer
-    currentChat.messages.push({ role: "assistant", content: answer })
+    if (imageUrl && imageRequest) {
+      answerElement.parentElement?.remove()
+      addImageMessage(imageUrl, data.image_alt || text)
+      currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl })
+    } else {
+      const answer = typeof data.response === "string" ? data.response.trim() : ""
+      if (!answer) throw new Error("Nova returned an empty response")
+      answerElement.textContent = answer
+      currentChat.messages.push({ role: "assistant", content: answer })
+    }
+
     currentChat.updated = Date.now()
     saveChat(currentChat)
     renderHistory()
@@ -147,7 +188,9 @@ function loadChat(chatData) {
   messagesElement.innerHTML = ""
   welcomeElement.style.display = currentChat.messages.length ? "none" : ""
   currentChat.messages.forEach(message => {
-    if (message.role === "user" || message.role === "assistant") addMessage(message.role, message.content)
+    if (message.role !== "user" && message.role !== "assistant") return
+    if (message.type === "image" && message.content) addImageMessage(message.content)
+    else addMessage(message.role, message.content)
   })
   renderHistory()
   requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
