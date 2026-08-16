@@ -1,260 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nova AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nova</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+*{box-sizing:border-box}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f1117;
-      color: white;
-      height: 100vh;
-      overflow: hidden;
-    }
+body{
+margin:0;
+background:#0b0d12;
+color:#f5f5f5;
+font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+height:100vh;
+overflow:hidden
+}
 
-    .app {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+.app{
+display:flex;
+height:100vh
+}
 
-    header {
-      height: 60px;
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      border-bottom: 1px solid #252936;
-      background: #141720;
-    }
+.sidebar{
+width:250px;
+background:#11141b;
+border-right:1px solid #242833;
+padding:18px;
+display:flex;
+flex-direction:column
+}
 
-    .logo {
-      font-size: 20px;
-      font-weight: bold;
-    }
+.logo{
+font-size:21px;
+font-weight:700;
+margin-bottom:25px
+}
 
-    .status {
-      margin-left: 10px;
-      font-size: 12px;
-      color: #8f96a8;
-    }
+.newchat{
+border:1px solid #303541;
+background:#191d26;
+color:white;
+border-radius:10px;
+padding:12px;
+cursor:pointer;
+font-size:14px
+}
 
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 25px 15%;
-    }
+.newchat:hover{
+background:#222733
+}
 
-    .message {
-      margin-bottom: 20px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
+.sidebar-bottom{
+margin-top:auto;
+color:#858b9b;
+font-size:13px
+}
 
-    .user {
-      text-align: right;
-    }
+.main{
+flex:1;
+display:flex;
+flex-direction:column;
+min-width:0
+}
 
-    .bubble {
-      display: inline-block;
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      background: #202532;
-      text-align: left;
-    }
+.topbar{
+height:60px;
+border-bottom:1px solid #242833;
+display:flex;
+align-items:center;
+padding:0 22px;
+font-weight:600
+}
 
-    .user .bubble {
-      background: #303747;
-    }
+.online{
+margin-left:10px;
+font-size:12px;
+color:#7d8597
+}
 
-    .nova .bubble {
-      background: transparent;
-    }
+.chat{
+flex:1;
+overflow-y:auto;
+padding:30px 15%;
+}
 
-    .input-area {
-      padding: 15px;
-      border-top: 1px solid #252936;
-      background: #141720;
-    }
+.welcome{
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+color:#8b91a1
+}
 
-    .input-box {
-      max-width: 900px;
-      margin: auto;
-      display: flex;
-      gap: 10px;
-      background: #202532;
-      border: 1px solid #303747;
-      border-radius: 16px;
-      padding: 8px;
-    }
+.welcome h1{
+color:white;
+font-size:34px;
+margin:0 0 8px
+}
 
-    textarea {
-      flex: 1;
-      resize: none;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: white;
-      padding: 10px;
-      font-size: 15px;
-      min-height: 42px;
-      max-height: 150px;
-    }
+.message{
+display:flex;
+margin-bottom:26px
+}
 
-    button {
-      width: 45px;
-      height: 45px;
-      border: none;
-      border-radius: 12px;
-      background: white;
-      color: black;
-      cursor: pointer;
-      font-size: 18px;
-    }
+.user{
+justify-content:flex-end
+}
 
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+.bubble{
+max-width:75%;
+padding:13px 16px;
+border-radius:15px;
+line-height:1.6;
+white-space:pre-wrap
+}
 
-    .typing {
-      color: #8f96a8;
-      font-size: 14px;
-    }
+.user .bubble{
+background:#252a35
+}
 
-    @media (max-width: 700px) {
-      #chat {
-        padding: 20px 12px;
-      }
+.nova .bubble{
+background:transparent;
+padding-left:0
+}
 
-      .bubble {
-        max-width: 90%;
-      }
-    }
-  </style>
+.composer{
+padding:15px 15%;
+border-top:1px solid #242833
+}
+
+.input{
+max-width:900px;
+margin:auto;
+display:flex;
+align-items:end;
+gap:8px;
+background:#181c25;
+border:1px solid #303541;
+border-radius:15px;
+padding:8px
+}
+
+textarea{
+flex:1;
+resize:none;
+background:transparent;
+border:0;
+outline:0;
+color:white;
+font-size:15px;
+padding:10px;
+min-height:42px;
+max-height:150px
+}
+
+.send{
+width:42px;
+height:42px;
+border:0;
+border-radius:11px;
+background:white;
+color:#08090c;
+font-size:19px;
+cursor:pointer
+}
+
+.send:disabled{
+opacity:.35
+}
+
+@media(max-width:800px){
+
+.sidebar{
+display:none
+}
+
+.chat{
+padding:20px 15px
+}
+
+.composer{
+padding:12px
+}
+
+.bubble{
+max-width:88%
+}
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-  <header>
-    <div class="logo">Nova AI</div>
-    <div class="status">Online</div>
-  </header>
+<aside class="sidebar">
 
-  <main id="chat"></main>
+<div class="logo">Nova</div>
 
-  <div class="input-area">
-    <div class="input-box">
+<button class="newchat" onclick="newChat()">
++ New chat
+</button>
 
-      <textarea
-        id="message"
-        placeholder="Message Nova..."
-        rows="1"
-      ></textarea>
+<div class="sidebar-bottom">
+Nova AI<br>
+Llama model
+</div>
 
-      <button id="send" onclick="sendMessage()">↑</button>
+</aside>
 
-    </div>
-  </div>
+<section class="main">
+
+<header class="topbar">
+Nova
+<span class="online">● online</span>
+</header>
+
+<main class="chat" id="chat">
+
+<div class="welcome" id="welcome">
+<h1>How can I help?</h1>
+<div>Talk to Nova</div>
+</div>
+
+</main>
+
+<div class="composer">
+
+<div class="input">
+
+<textarea
+id="message"
+placeholder="Message Nova..."
+rows="1"
+></textarea>
+
+<button class="send" id="send" onclick="sendMessage()">↑</button>
+
+</div>
+
+</div>
+
+</section>
 
 </div>
 
 <script>
-  const input = document.getElementById("message");
-  const chat = document.getElementById("chat");
-  const sendButton = document.getElementById("send");
 
-  input.addEventListener("keydown", function(event) {
+const input=document.getElementById("message");
+const chat=document.getElementById("chat");
+const send=document.getElementById("send");
+const welcome=document.getElementById("welcome");
 
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
+input.addEventListener("keydown",e=>{
 
-  });
+if(e.key==="Enter"&&!e.shiftKey){
 
-  async function sendMessage() {
+e.preventDefault();
+sendMessage();
 
-    const message = input.value.trim();
+}
 
-    if (!message) return;
+});
 
-    addMessage("user", message);
+async function sendMessage(){
 
-    input.value = "";
-    sendButton.disabled = true;
+const text=input.value.trim();
 
-    const typing = document.createElement("div");
-    typing.className = "message nova";
-    typing.innerHTML = '<div class="typing">Nova is thinking...</div>';
+if(!text)return;
 
-    chat.appendChild(typing);
-    chat.scrollTop = chat.scrollHeight;
+welcome.style.display="none";
 
-    try {
+addMessage("user",text);
 
-      const response = await fetch(
-        "https://muddy-tooth-d17c.llhomosapient.workers.dev",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: message
-          })
-        }
-      );
+input.value="";
+send.disabled=true;
 
-      const data = await response.json();
+const thinking=addMessage(
+"nova",
+"Thinking..."
+);
 
-      typing.remove();
+try{
 
-      if (data.error) {
-        addMessage("nova", "Something went wrong: " + data.error);
-      } else {
-        addMessage("nova", data.response);
-      }
+const response=await fetch(
+"https://muddy-tooth-d17c.llhomosapient.workers.dev",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+message:text
+})
+}
+);
 
-    } catch (error) {
+const data=await response.json();
 
-      typing.remove();
+thinking.remove();
 
-      addMessage(
-        "nova",
-        "I couldn't connect to the Nova server."
-      );
+if(data.error){
 
-    }
+addMessage("nova","Error: "+data.error);
 
-    sendButton.disabled = false;
-    input.focus();
-  }
+}else{
 
-  function addMessage(type, text) {
+addMessage("nova",data.response);
 
-    const message = document.createElement("div");
-    message.className = "message " + type;
+}
 
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
+}catch(error){
 
-    bubble.textContent = text;
+thinking.remove();
 
-    message.appendChild(bubble);
-    chat.appendChild(message);
+addMessage(
+"nova",
+"Couldn't connect to Nova."
+);
 
-    chat.scrollTop = chat.scrollHeight;
-  }
+}
+
+send.disabled=false;
+input.focus();
+
+}
+
+function addMessage(type,text){
+
+const message=document.createElement("div");
+
+message.className="message "+type;
+
+const bubble=document.createElement("div");
+
+bubble.className="bubble";
+
+bubble.textContent=text;
+
+message.appendChild(bubble);
+
+chat.appendChild(message);
+
+chat.scrollTop=chat.scrollHeight;
+
+return message;
+
+}
+
+function newChat(){
+
+chat.innerHTML="";
+
+chat.appendChild(welcome);
+
+welcome.style.display="flex";
+
+input.value="";
+
+input.focus();
+
+}
+
 </script>
 
 </body>
