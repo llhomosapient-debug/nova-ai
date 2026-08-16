@@ -13,34 +13,15 @@ function getChats() {
 }
 
 function saveChats(chats) {
-  localStorage.setItem(
-    NOVA_STORAGE_KEY,
-    JSON.stringify(chats.slice(0, 100))
-  )
-}
-
-function saveChat(chat) {
-  if (!chat?.id) return
-
-  const chats = getChats()
-
-  const filtered = chats.filter(
-    item => item.id !== chat.id
-  )
-
-  filtered.unshift(chat)
-
-  saveChats(filtered)
-}
-
-function deleteChat(id) {
-  saveChats(
-    getChats().filter(
-      chat => chat.id !== id
+  try {
+    localStorage.setItem(
+      NOVA_STORAGE_KEY,
+      JSON.stringify(chats.slice(0, 100))
     )
-  )
+  } catch (error) {
+    console.error("Nova history error:", error)
+  }
 }
 
 window.getChats = getChats
-window.saveChat = saveChat
-window.deleteChat = deleteChat
+window.saveChats = saveChats
