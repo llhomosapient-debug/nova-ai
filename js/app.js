@@ -45,17 +45,18 @@ function showNovaPanel(title, text, actionLabel = "Close") {
     if (event.target === backdrop) close()
   })
 
-  document.addEventListener("keydown", function escape(event) {
+  const escape = event => {
     if (event.key !== "Escape") return
     close()
     document.removeEventListener("keydown", escape)
-  })
+  }
+
+  document.addEventListener("keydown", escape)
 
   backdrop.appendChild(panel)
   document.body.appendChild(backdrop)
 
   requestAnimationFrame(() => backdrop.classList.add("visible"))
-
   panel.querySelector(".nova-modal-close").focus()
 }
 
@@ -133,7 +134,11 @@ document.getElementById("modelSelector")?.addEventListener("click", () => {
 })
 
 document.getElementById("shareButton")?.addEventListener("click", async () => {
-  if (!window.currentChat) {
+  const chat = typeof window.getCurrentChat === "function"
+    ? window.getCurrentChat()
+    : null
+
+  if (!chat) {
     showNovaPanel("Nothing to share", "Start a chat first and Nova can create a shareable link for the current conversation.")
     return
   }
