@@ -1,75 +1,81 @@
-const inputBox =
-  document.getElementById("messageInput")
+const input = document.getElementById("messageInput")
+const send = document.getElementById("sendButton")
+const newChat = document.getElementById("newChat")
+const mobileMenu = document.getElementById("mobileMenu")
+const sidebar = document.getElementById("sidebar")
 
-const newChatButton =
-  document.getElementById("newChat")
+function resizeInput() {
+  if (!input) return
 
-const mobileMenu =
-  document.getElementById("mobileMenu")
-
-const sidebar =
-  document.getElementById("sidebar")
-
-const suggestionButtons =
-  document.querySelectorAll(
-    ".suggestions button"
-  )
-
-if (inputBox) {
-
-  inputBox.addEventListener(
-    "input",
-    () => {
-      inputBox.style.height = "auto"
-
-      inputBox.style.height =
-        Math.min(
-          inputBox.scrollHeight,
-          180
-        ) + "px"
-    }
-  )
-
-  inputBox.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey
-      ) {
-        event.preventDefault()
-        sendMessage()
-      }
-
-    }
-  )
+  input.style.height = "auto"
+  input.style.height =
+    Math.min(input.scrollHeight, 180) + "px"
 }
 
-if (newChatButton) {
-  newChatButton.onclick = () => {
-    newChat()
+input?.addEventListener("input", resizeInput)
+
+input?.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault()
+    window.sendMessage()
   }
-}
-
-if (mobileMenu) {
-  mobileMenu.onclick = () => {
-    sidebar.classList.toggle("open")
-  }
-}
-
-suggestionButtons.forEach(button => {
-
-  button.onclick = () => {
-
-    inputBox.value =
-      button.dataset.prompt || ""
-
-    inputBox.focus()
-
-    inputBox.dispatchEvent(
-      new Event("input")
-    )
-  }
-
 })
+
+send?.addEventListener("click", () => {
+  window.sendMessage()
+})
+
+newChat?.addEventListener("click", () => {
+  window.newChat()
+})
+
+mobileMenu?.addEventListener("click", () => {
+  sidebar?.classList.toggle("open")
+})
+
+document
+  .querySelectorAll(".suggestions button")
+  .forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      input.value =
+        button.dataset.prompt || ""
+
+      resizeInput()
+      input.focus()
+    })
+
+  })
+
+document
+  .getElementById("projects")
+  ?.addEventListener("click", () => {
+    alert("Projects coming next")
+  })
+
+document
+  .getElementById("library")
+  ?.addEventListener("click", () => {
+    alert("Library coming next")
+  })
+
+document
+  .getElementById("plugins")
+  ?.addEventListener("click", () => {
+    alert("Plugins coming next")
+  })
+
+document
+  .getElementById("settings")
+  ?.addEventListener("click", () => {
+    alert("Settings coming next")
+  })
+
+document
+  .getElementById("searchChats")
+  ?.addEventListener("click", () => {
+    alert("Chat search coming next")
+  })
+
+input?.focus()
