@@ -58,6 +58,43 @@ function addMessage(role, text) {
   return content
 }
 
+function addUsage(messageElement, usage, model) {
+  if (!usage || typeof usage !== "object") return
+
+  const total = Number(usage.total_tokens || 0)
+  const input = Number(usage.input_tokens || 0)
+  const output = Number(usage.output_tokens || 0)
+
+  if (!total && !input && !output) return
+
+  const meta = document.createElement("div")
+  meta.className = "message-meta"
+  meta.textContent = `${formatModelName(model)} · ${formatTokens(total || input + output)} tokens`
+
+  messageElement.parentElement?.appendChild(meta)
+}
+
+function formatTokens(value) {
+  const number = Number(value) || 0
+  if (number < 1000) return String(number)
+  if (number < 1000000) return `${(number / 1000).toFixed(number >= 10000 ? 0 : 1)}k`
+  return `${(number / 1000000).toFixed(1)}m`
+}
+
+function formatModelName(model) {
+  const names = {
+    fast: "Nova Fast",
+    "nova-fast": "Nova Fast",
+    balanced: "Nova Balanced",
+    "nova-balanced": "Nova Balanced",
+    think: "Nova Think",
+    "nova-think": "Nova Think",
+    max: "Nova Max",
+    "nova-max": "Nova Max"
+  }
+  return names[model] || "Nova"
+}
+
 function addImageMessage(url, alt = "Nova generated image") {
   welcomeElement.style.display = "none"
   const message = document.createElement("div")
@@ -74,6 +111,7 @@ function addImageMessage(url, alt = "Nova generated image") {
   message.appendChild(content)
   messagesElement.appendChild(message)
   requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
+  return message
 }
 
 function looksLikeImageRequest(text) {
@@ -102,14 +140,16 @@ async function sendMessage() {
 
   try {
     const settings = getNovaSettings()
+    const selectedModel = settings.model || "nova-balanced"
     const imageRequest = Boolean(settings.images && looksLikeImageRequest(text))
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
         history: currentChat.messages.slice(-12),
-        model: settings.model || "nova-balanced",
+        model: selectedModel,
         thinking: Boolean(settings.thinking),
         research: Boolean(settings.research),
         images: Boolean(settings.images),
@@ -128,14 +168,17 @@ async function sendMessage() {
     if (!response.ok) throw new Error(data?.error || `Request failed ${response.status}`)
 
     const imageUrl = data?.image_url || data?.imageUrl || (typeof data?.image === "string" ? data.image : null) || (Array.isArray(data?.images) ? (data.images[0]?.url || data.images[0]) : null)
+
     if (imageUrl && imageRequest) {
       answerElement.parentElement?.remove()
-      addImageMessage(imageUrl, data.image_alt || text)
+      const imageMessage = addImageMessage(imageUrl, data.image_alt || text)
+      addUsage(imageMessage.querySelector(".message-content"), data.usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl })
     } else {
       const answer = typeof data?.response === "string" ? data.response.trim() : ""
       if (!answer) throw new Error("Nova returned an empty response")
       answerElement.textContent = answer
+      addUsage(answerElement, data.usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", content: answer })
     }
 
