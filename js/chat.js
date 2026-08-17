@@ -1,7 +1,7 @@
 const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 const NOVA_CHAT_SETTINGS_KEY = "nova_settings_v2"
 const NOVA_CHAT_AUTH_KEY = "nova_registered_v1"
-const NOVA_USAGE_KEY = "nova_usage_v1"
+const NOVA_USAGE_KEY = "nova_usage_v2"
 
 let currentChat = null
 let generating = false
@@ -40,10 +40,10 @@ function saveChat(chat) {
 
 function addUsageToTotals(usage) {
   if (!usage || typeof usage !== "object") return
-  const input = Number(usage.input_tokens || 0)
-  const output = Number(usage.output_tokens || 0)
-  const total = Number(usage.total_tokens || input + output)
-  if (!total && !input && !output) return
+  const input = Number(usage.input_tokens ?? 0)
+  const output = Number(usage.output_tokens ?? 0)
+  const total = Number(usage.total_tokens ?? (input + output))
+  if (!Number.isFinite(total) || total <= 0) return
 
   try {
     const now = new Date()
@@ -87,10 +87,9 @@ function addMessage(role, text) {
 }
 
 function formatTokens(value) {
-  const number = Number(value) || 0
-  if (number < 1000) return String(number)
-  if (number < 1000000) return `${(number / 1000).toFixed(number >= 10000 ? 0 : 1)}k`
-  return `${(number / 1000000).toFixed(1)}m`
+  const number = Number(value)
+  if (!Number.isFinite(number) || number < 1) return ""
+  return number.toLocaleString()
 }
 
 function formatModelName(model) {
@@ -107,20 +106,32 @@ function formatModelName(model) {
   return names[model] || "Nova"
 }
 
-function addUsage(messageElement, usage, model) {
-  if (!usage || typeof usage !== "object") return
-  const total = Number(usage.total_tokens || 0)
-  const input = Number(usage.input_tokens || 0)
-  const output = Number(usage.output_tokens || 0)
-  if (!total && !input && !output) return
+function addUsage(message, usage, model) {
+  if (!message || !usage || typeof usage !== "object") return
 
-  const message = messageElement.closest(".message")
-  if (!message || message.querySelector(".message-meta")) return
+  const input = Number(usage.input_tokens ?? 0)
+  const output = Number(usage.output_tokens ?? 0)
+  const total = Number(usage.total_tokens ?? (input + output))
+  if (!Number.isFinite(total) || total <= 0) return
+  if (message.querySelector(".message-meta")) return
 
   const meta = document.createElement("div")
   meta.className = "message-meta"
-  meta.innerHTML = `<span class="message-meta-model"></span><span class="message-meta-separator">·</span><span>${formatTokens(total || input + output)} tokens</span>`
-  meta.querySelector(".message-meta-model").textContent = formatModelName(model)
+
+  const modelSpan = document.createElement("span")
+  modelSpan.className = "message-meta-model"
+  modelSpan.textContent = formatModelName(model)
+
+  const separator = document.createElement("span")
+  separator.className = "message-meta-separator"
+  separator.textContent = "·"
+
+  const tokenSpan = document.createElement("span")
+  tokenSpan.textContent = `${formatTokens(total)} tokens`
+
+  meta.append(modelSpan, separator, tokenSpan)
+
+  // Metadata belongs to the message itself, never inside message-content.
   message.appendChild(meta)
 }
 
@@ -234,13 +245,13 @@ async function sendMessage() {
     if (imageUrl && imageRequest) {
       answerElement.closest(".message")?.remove()
       const imageMessage = addImageMessage(imageUrl, data.image_alt || text)
-      addUsage(imageMessage.querySelector(".message-content"), usage, data.model || selectedModel)
+      addUsage(imageMessage, usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl, usage, model: data.model || selectedModel })
     } else {
       const answer = typeof data?.response === "string" ? data.response.trim() : ""
       if (!answer) throw new Error("Nova returned an empty response")
       setAssistantText(answerElement, answer)
-      addUsage(answerElement, usage, data.model || selectedModel)
+      addUsage(answerElement.closest(".message"), usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", content: answer, usage, model: data.model || selectedModel })
     }
 
@@ -267,11 +278,11 @@ function loadChat(chatData) {
     if (message.role !== "user" && message.role !== "assistant") return
     if (message.type === "image" && message.content) {
       const imageMessage = addImageMessage(message.content)
-      addUsage(imageMessage.querySelector(".message-content"), message.usage, message.model)
+      addUsage(imageMessage, message.usage, message.model)
     } else {
       const content = addMessage(message.role, message.content)
       if (message.role === "assistant") setAssistantText(content, message.content)
-      addUsage(content, message.usage, message.model)
+      if (message.role === "assistant") addUsage(content.closest(".message"), message.usage, message.model)
     }
   })
   renderHistory()
