@@ -114,10 +114,46 @@ function addUsage(messageElement, usage, model) {
   const output = Number(usage.output_tokens || 0)
   if (!total && !input && !output) return
 
+  const message = messageElement.closest(".message")
+  if (!message || message.querySelector(".message-meta")) return
+
   const meta = document.createElement("div")
   meta.className = "message-meta"
-  meta.textContent = `${formatModelName(model)} · ${formatTokens(total || input + output)} tokens`
-  messageElement.parentElement?.appendChild(meta)
+  meta.innerHTML = `<span class="message-meta-model"></span><span class="message-meta-separator">·</span><span>${formatTokens(total || input + output)} tokens</span>`
+  meta.querySelector(".message-meta-model").textContent = formatModelName(model)
+  message.appendChild(meta)
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+}
+
+function renderAssistantText(text) {
+  const source = String(text ?? "")
+  const codePattern = /```([\w+-]*)\n?([\s\S]*?)```/g
+  let html = ""
+  let lastIndex = 0
+  let match
+
+  while ((match = codePattern.exec(source))) {
+    html += escapeHtml(source.slice(lastIndex, match.index)).replace(/\n/g, "<br>")
+    const language = escapeHtml(match[1] || "code")
+    const code = escapeHtml(match[2].replace(/^\n|\n$/g, ""))
+    html += `<div class="nova-code-wrap"><div class="nova-code-label">${language}</div><pre><code>${code}</code></pre></div>`
+    lastIndex = codePattern.lastIndex
+  }
+
+  html += escapeHtml(source.slice(lastIndex)).replace(/\n/g, "<br>")
+  return html
+}
+
+function setAssistantText(content, text) {
+  content.innerHTML = renderAssistantText(text)
 }
 
 function addImageMessage(url, alt = "Nova generated image") {
@@ -196,14 +232,14 @@ async function sendMessage() {
     const imageUrl = data?.image_url || data?.imageUrl || (typeof data?.image === "string" ? data.image : null) || (Array.isArray(data?.images) ? (data.images[0]?.url || data.images[0]) : null)
 
     if (imageUrl && imageRequest) {
-      answerElement.parentElement?.remove()
+      answerElement.closest(".message")?.remove()
       const imageMessage = addImageMessage(imageUrl, data.image_alt || text)
       addUsage(imageMessage.querySelector(".message-content"), usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl, usage, model: data.model || selectedModel })
     } else {
       const answer = typeof data?.response === "string" ? data.response.trim() : ""
       if (!answer) throw new Error("Nova returned an empty response")
-      answerElement.textContent = answer
+      setAssistantText(answerElement, answer)
       addUsage(answerElement, usage, data.model || selectedModel)
       currentChat.messages.push({ role: "assistant", content: answer, usage, model: data.model || selectedModel })
     }
@@ -234,6 +270,7 @@ function loadChat(chatData) {
       addUsage(imageMessage.querySelector(".message-content"), message.usage, message.model)
     } else {
       const content = addMessage(message.role, message.content)
+      if (message.role === "assistant") setAssistantText(content, message.content)
       addUsage(content, message.usage, message.model)
     }
   })
