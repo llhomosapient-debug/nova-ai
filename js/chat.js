@@ -1,6 +1,7 @@
 const API_URL = "https://muddy-tooth-d17c.llhomosapient.workers.dev"
 const NOVA_CHAT_SETTINGS_KEY = "nova_settings_v2"
 const NOVA_CHAT_AUTH_KEY = "nova_registered_v1"
+const NOVA_USAGE_KEY = "nova_usage_v1"
 
 let currentChat = null
 let generating = false
@@ -37,6 +38,33 @@ function saveChat(chat) {
   window.saveChats(chats)
 }
 
+function addUsageToTotals(usage) {
+  if (!usage || typeof usage !== "object") return
+  const input = Number(usage.input_tokens || 0)
+  const output = Number(usage.output_tokens || 0)
+  const total = Number(usage.total_tokens || input + output)
+  if (!total && !input && !output) return
+
+  try {
+    const now = new Date()
+    const key = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`
+    const data = JSON.parse(localStorage.getItem(NOVA_USAGE_KEY) || "{}")
+    data.days ||= {}
+    data.days[key] = Number(data.days[key] || 0) + total
+    data.total = Number(data.total || 0) + total
+    localStorage.setItem(NOVA_USAGE_KEY, JSON.stringify(data))
+  } catch {}
+}
+
+function getTokenTotal() {
+  try {
+    const data = JSON.parse(localStorage.getItem(NOVA_USAGE_KEY) || "{}")
+    return Number(data.total || 0)
+  } catch {
+    return 0
+  }
+}
+
 function createChat() {
   currentChat = { id: makeId(), title: "New chat", messages: [], updated: Date.now() }
   messagesElement.innerHTML = ""
@@ -58,22 +86,6 @@ function addMessage(role, text) {
   return content
 }
 
-function addUsage(messageElement, usage, model) {
-  if (!usage || typeof usage !== "object") return
-
-  const total = Number(usage.total_tokens || 0)
-  const input = Number(usage.input_tokens || 0)
-  const output = Number(usage.output_tokens || 0)
-
-  if (!total && !input && !output) return
-
-  const meta = document.createElement("div")
-  meta.className = "message-meta"
-  meta.textContent = `${formatModelName(model)} · ${formatTokens(total || input + output)} tokens`
-
-  messageElement.parentElement?.appendChild(meta)
-}
-
 function formatTokens(value) {
   const number = Number(value) || 0
   if (number < 1000) return String(number)
@@ -93,6 +105,19 @@ function formatModelName(model) {
     "nova-max": "Nova Max"
   }
   return names[model] || "Nova"
+}
+
+function addUsage(messageElement, usage, model) {
+  if (!usage || typeof usage !== "object") return
+  const total = Number(usage.total_tokens || 0)
+  const input = Number(usage.input_tokens || 0)
+  const output = Number(usage.output_tokens || 0)
+  if (!total && !input && !output) return
+
+  const meta = document.createElement("div")
+  meta.className = "message-meta"
+  meta.textContent = `${formatModelName(model)} · ${formatTokens(total || input + output)} tokens`
+  messageElement.parentElement?.appendChild(meta)
 }
 
 function addImageMessage(url, alt = "Nova generated image") {
@@ -140,7 +165,7 @@ async function sendMessage() {
 
   try {
     const settings = getNovaSettings()
-    const selectedModel = settings.model || "nova-balanced"
+    const selectedModel = settings.model || "balanced"
     const imageRequest = Boolean(settings.images && looksLikeImageRequest(text))
 
     const response = await fetch(API_URL, {
@@ -167,21 +192,23 @@ async function sendMessage() {
     try { data = await response.json() } catch { throw new Error("Nova returned an invalid response") }
     if (!response.ok) throw new Error(data?.error || `Request failed ${response.status}`)
 
+    const usage = data?.usage || null
     const imageUrl = data?.image_url || data?.imageUrl || (typeof data?.image === "string" ? data.image : null) || (Array.isArray(data?.images) ? (data.images[0]?.url || data.images[0]) : null)
 
     if (imageUrl && imageRequest) {
       answerElement.parentElement?.remove()
       const imageMessage = addImageMessage(imageUrl, data.image_alt || text)
-      addUsage(imageMessage.querySelector(".message-content"), data.usage, data.model || selectedModel)
-      currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl })
+      addUsage(imageMessage.querySelector(".message-content"), usage, data.model || selectedModel)
+      currentChat.messages.push({ role: "assistant", type: "image", content: imageUrl, usage, model: data.model || selectedModel })
     } else {
       const answer = typeof data?.response === "string" ? data.response.trim() : ""
       if (!answer) throw new Error("Nova returned an empty response")
       answerElement.textContent = answer
-      addUsage(answerElement, data.usage, data.model || selectedModel)
-      currentChat.messages.push({ role: "assistant", content: answer })
+      addUsage(answerElement, usage, data.model || selectedModel)
+      currentChat.messages.push({ role: "assistant", content: answer, usage, model: data.model || selectedModel })
     }
 
+    addUsageToTotals(usage)
     currentChat.updated = Date.now()
     saveChat(currentChat)
     renderHistory()
@@ -202,8 +229,13 @@ function loadChat(chatData) {
   welcomeElement.style.display = currentChat.messages.length ? "none" : ""
   currentChat.messages.forEach(message => {
     if (message.role !== "user" && message.role !== "assistant") return
-    if (message.type === "image" && message.content) addImageMessage(message.content)
-    else addMessage(message.role, message.content)
+    if (message.type === "image" && message.content) {
+      const imageMessage = addImageMessage(message.content)
+      addUsage(imageMessage.querySelector(".message-content"), message.usage, message.model)
+    } else {
+      const content = addMessage(message.role, message.content)
+      addUsage(content, message.usage, message.model)
+    }
   })
   renderHistory()
   requestAnimationFrame(() => { chatElement.scrollTop = chatElement.scrollHeight })
@@ -257,5 +289,6 @@ window.loadChat = loadChat
 window.renderHistory = renderHistory
 window.deleteChat = deleteChat
 window.getCurrentChat = () => currentChat
+window.getNovaTokenTotal = getTokenTotal
 
 renderHistory()
